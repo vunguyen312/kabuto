@@ -2,7 +2,6 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
     Arial, sans-serif;
   background-color: var(--bg);
-  display: flex;
   max-width: 100%;
   height: 100vh;
   margin: 0;
@@ -16,6 +15,12 @@ body {
   --text-size: 12px;
 }
 
+#editor {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
 #line-numbers {
   background-color: var(--bg-secondary);
   color: var(--text-colour);
@@ -24,7 +29,8 @@ body {
   border: none;
   resize: none;
   padding: 5px 5px;
-  width: 30px;
+  width: 40px;
+  overflow: hidden;
 }
 
 #text-input {
@@ -42,4 +48,24 @@ body {
 
 textarea:focus {
   outline: none;
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-colour);
+  border-radius: 12px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(207, 207, 207);
+  border-radius: 10px;
 }
