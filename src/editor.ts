@@ -10,9 +10,11 @@ export default class Editor {
     
     setLineNumbers(){
         this.countRows();
+        let lineNumbers = '';
         for(let i = 1; i <= this.totalRows; i++){
-            this.lineNumbers.value += `${i}\n`;
+            lineNumbers += `${i}\n`;
         }
+        this.lineNumbers.value = lineNumbers;
     }
 
     addLineNumber(){
