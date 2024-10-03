@@ -12,7 +12,8 @@ body {
   --bg: #1b1b1b;
   --bg-secondary: #242424;
   --text-colour: #ffffff;
-  --text-size: 12px;
+  --text-size: 0.9rem;
+  --line-height: 1.25rem;
 }
 
 #editor {
@@ -25,10 +26,11 @@ body {
   background-color: var(--bg-secondary);
   color: var(--text-colour);
   font-size: var(--text-size);
+  line-height: var(--line-height);
   text-align: right;
   border: none;
   resize: none;
-  padding: 5px 5px;
+  padding: 5px 5px 15px;
   width: 40px;
   overflow: hidden;
 }
@@ -37,13 +39,16 @@ body {
   width: 100%;
   height: 100%;
   font-size: var(--text-size);
+  line-height: var(--line-height);
   color: var(--text-colour);
   background-color: var(--bg);
+  white-space: nowrap;
   box-sizing: border-box;
-  margin: 0;
+  margin: 0 0 10px;
   padding: 5px;
   border: none;
   resize: none; 
+  overflow-x: scroll;
 }
 
 textarea:focus {
@@ -54,6 +59,7 @@ textarea:focus {
 
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {

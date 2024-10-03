@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "typeRoots": ["./node_modules/@types", "./global.d.ts"],
     "target": "ES6",
     "allowJs": true,
     "module": "commonjs",

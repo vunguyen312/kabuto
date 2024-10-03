@@ -1,6 +1,5 @@
 import { app, Menu, MenuItemConstructorOptions } from 'electron';
-import { openFileMenu } from './fileHandler';
-import { loadFile } from './renderer';
+import { openFileMenu, sendFileData } from './fileHandler';
 
 const isMac = process.platform === 'darwin'
 
@@ -10,9 +9,11 @@ const menuTemplate: any = [
         submenu: [
             {
                 label: 'Open File',
-                click: async () => {
-                    const result = await openFileMenu();
-                    loadFile(result);
+                click: async (menuItem: any, browserWindow: Window) => {
+                    const result = await openFileMenu(); 
+                    if (result && browserWindow) {
+                        sendFileData(browserWindow, result);
+                    }
                 }
             }
         ]

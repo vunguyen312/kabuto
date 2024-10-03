@@ -1,39 +1,63 @@
 export default class Editor {
     private text: HTMLTextAreaElement;
     private lineNumbers: HTMLTextAreaElement;
-    public totalRows: number;
+    private currentRowCount: number;
+    private prevRowCount: number;
 
     constructor(text: HTMLTextAreaElement, lineNumbers: HTMLTextAreaElement) {
         this.text = text;
         this.lineNumbers = lineNumbers;
+        this.currentRowCount = text.value.split('\n').length;
     }
     
     setLineNumbers(){
-        this.countRows();
+        this.prevRowCount = this.text.value.split('\n').length;
         let lineNumbers = '';
-        for(let i = 1; i <= this.totalRows; i++){
+        for(let i = 1; i <= this.prevRowCount; i++){
             lineNumbers += `${i}\n`;
         }
         this.lineNumbers.value = lineNumbers;
+        console.log(this.currentRowCount, "set");
     }
 
-    addLineNumber(){
-        this.totalRows++;
-        if(this.lineNumbers.value.slice(-1) !== '\n'){
-            this.lineNumbers.value += '\n';
+    addLineNumber(addedRows: number, prevRowCount: number){
+        const totalRows = prevRowCount + addedRows;
+
+        for(let i = prevRowCount + 1; i <= totalRows; i++){
+            if(this.lineNumbers.value.slice(-1) !== '\n'){
+                this.lineNumbers.value += '\n';
+            }
+
+            this.lineNumbers.value += `${i}`;
         }
-        this.lineNumbers.value += `${this.totalRows}`;
+        console.log(addedRows, "added line");
     }
 
     removeLineNumber(removedRows: number){
-        this.totalRows -= removedRows;
         const rows = this.lineNumbers.value.split('\n');
-        rows.length = this.totalRows;
+        const lastRow = this.lineNumbers.value.slice(-1);
+        if(lastRow === '\n'){
+            rows.length -= 1;
+        }
+        rows.length -= removedRows;
         this.lineNumbers.value = rows.join('\n');
+        console.log(rows.length, "removed line");
     }
 
-    countRows(){
-        this.totalRows = this.text.value.split('\n').length;
-        return this.totalRows;
+    handleLineNumber(text: HTMLTextAreaElement){
+        this.currentRowCount = text.value.split('\n').length;
+        if(this.currentRowCount > this.prevRowCount){
+            this.addLineNumber(this.currentRowCount - this.prevRowCount, this.prevRowCount);
+        }
+        if(this.currentRowCount < this.prevRowCount){
+            this.removeLineNumber(this.prevRowCount - this.currentRowCount);
+        }
+        this.prevRowCount = this.currentRowCount;
+    }
+
+    handleUndo = (e: KeyboardEvent, text: HTMLTextAreaElement) => {
+        if(e.key !== 'Ctrl' && e.key !== 'z') return;
+        this.prevRowCount = text.value.split('\n').length;
+        this.handleLineNumber(text);
     }
 }
