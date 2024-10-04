@@ -21,10 +21,15 @@ const main = () => {
     text.addEventListener('scroll', () => {
         lineNumbers.scrollTop = text.scrollTop;
     });
-
-    window.electron.receiveFileData((e: Event, fileData: string) => {
-        text.value = fileData;
+    
+    window.electron.receiveFileData((e: Event, fileData: FileData) => {
+        text.value = fileData.content; 
+        editor.filePath = fileData.path;
         editor.setLineNumbers();
+    });
+
+    window.electron.pingSaveData(() => {
+        window.electron.saveFileData({ path: editor.filePath, content: text.value });
     });
 }
 

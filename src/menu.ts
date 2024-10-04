@@ -1,5 +1,5 @@
 import { app, Menu, MenuItemConstructorOptions } from 'electron';
-import { openFileMenu, sendFileData } from './fileHandler';
+import { openFileMenu, sendFileData, pingSaveData } from './fileHandler';
 
 const isMac = process.platform === 'darwin'
 
@@ -14,6 +14,12 @@ const menuTemplate: any = [
                     if (result && browserWindow) {
                         sendFileData(browserWindow, result);
                     }
+                }
+            },
+            {
+                label: "Save File",
+                click: async (menuItem: any, browserWindow: Window) => {
+                    pingSaveData(browserWindow);
                 }
             }
         ]

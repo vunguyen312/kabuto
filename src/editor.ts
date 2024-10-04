@@ -3,6 +3,7 @@ export default class Editor {
     private lineNumbers: HTMLTextAreaElement;
     private currentRowCount: number;
     private prevRowCount: number;
+    public filePath: string;
 
     constructor(text: HTMLTextAreaElement, lineNumbers: HTMLTextAreaElement) {
         this.text = text;
