@@ -13,12 +13,32 @@ export const openFileMenu = async () => {
   return { path: file, content: content };
 }
 
+export const createFileMenu = async (fileData: FileData): Promise<void> => {
+  const result = await dialog
+  .showSaveDialog({})
+  .catch((err) => console.error(err));
+
+  if (!result || result.canceled) return null;
+
+  const { filePath } = result;
+  fs.writeFileSync(filePath, fileData.content);
+}
+
+export const verifyFile = (fileData: FileData): boolean => {
+  const { path } = fileData;
+  return fs.existsSync(path);
+}
+
 export const sendFileData = (window: any, fileData: FileData) => {
   window.webContents.send("send-file-data", fileData);
 }
 
 export const pingSaveData = (window: any) => {
   window.webContents.send('ping-save-data');
+}
+
+export const pingSaveAsData = (window: any) => {
+  window.webContents.send('ping-save-as-data');
 }
 
 export const saveFileData = (fileData: FileData) => {

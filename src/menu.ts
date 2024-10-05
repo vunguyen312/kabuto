@@ -1,5 +1,5 @@
 import { app, Menu, MenuItemConstructorOptions } from 'electron';
-import { openFileMenu, sendFileData, pingSaveData } from './fileHandler';
+import { openFileMenu, createFileMenu, sendFileData, pingSaveData, pingSaveAsData } from './fileHandler';
 
 const isMac = process.platform === 'darwin'
 
@@ -7,6 +7,15 @@ const menuTemplate: any = [
     {
         label: 'File',
         submenu: [
+            {
+                label: 'New File',
+                click: async () => {
+                    await createFileMenu({ path: null, content: '' }); 
+                }
+            },
+            {
+                type: 'separator'
+            },
             {
                 label: 'Open File',
                 click: async (menuItem: any, browserWindow: Window) => {
@@ -17,9 +26,18 @@ const menuTemplate: any = [
                 }
             },
             {
-                label: "Save File",
+                type: 'separator'
+            },
+            {
+                label: "Save",
                 click: async (menuItem: any, browserWindow: Window) => {
                     pingSaveData(browserWindow);
+                }
+            },
+            {
+                label: "Save As",
+                click: async (menuItem: any, browserWindow: Window) => {
+                    pingSaveAsData(browserWindow);
                 }
             }
         ]

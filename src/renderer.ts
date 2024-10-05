@@ -2,6 +2,7 @@ import './index.css';
 import Editor from './editor';
 
 const main = () => {
+    const title = document.querySelector('title') as HTMLTitleElement;
     const text = document.getElementById('text-input') as HTMLTextAreaElement;
     const lineNumbers = document.getElementById('line-numbers') as HTMLTextAreaElement;
     
@@ -26,10 +27,15 @@ const main = () => {
         text.value = fileData.content; 
         editor.filePath = fileData.path;
         editor.setLineNumbers();
+        title.textContent = `Simple Text Editor - ${editor.filePath}`;
     });
 
     window.electron.pingSaveData(() => {
         window.electron.saveFileData({ path: editor.filePath, content: text.value });
+    });
+
+    window.electron.pingSaveAsData(() => {
+        window.electron.saveFileAsData({ path: editor.filePath, content: text.value });
     });
 }
 
