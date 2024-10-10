@@ -45,7 +45,7 @@ export default class Editor {
         console.log(rows.length, "removed line");
     }
 
-    handleLineNumber(text: HTMLTextAreaElement){
+    handleLineNumber(text: HTMLTextAreaElement): void{
         this.currentRowCount = text.value.split('\n').length;
         if(this.currentRowCount > this.prevRowCount){
             this.addLineNumber(this.currentRowCount - this.prevRowCount, this.prevRowCount);
@@ -56,9 +56,40 @@ export default class Editor {
         this.prevRowCount = this.currentRowCount;
     }
 
-    handleUndo = (e: KeyboardEvent, text: HTMLTextAreaElement) => {
+    handleUndo(e: KeyboardEvent, text: HTMLTextAreaElement) {
         if(e.key !== 'Ctrl' && e.key !== 'z') return;
         this.prevRowCount = text.value.split('\n').length;
         this.handleLineNumber(text);
+    }
+
+    highlight(text: HTMLTextAreaElement, output: HTMLDivElement) {
+        const keywords = /\b(const|let|var|if|else|for|while|function|return|class|import|export|async|await)\b/g;
+        const strings = /(['"])(?:(?=(\\?))\2.|[^\\])*?\1/g;
+        const numbers = /\b\d+(\.\d+)?\b/g;
+        const singleLineComments = /\/\/.*?$/gm;
+        const multiLineComments = /\/\*[\s\S]*?\*\//g;
+
+        const escapeHTML = (str: string) => {
+            return str
+        }
+
+        let formattedText = escapeHTML(text.value);
+
+        //This gotta be a programming WAR CRIME LOOOOOOOOOOOOOL
+        //This is just a placeholder for now i swear
+        //TODO: Fix whatever the hell this is and add a custom window frame
+        formattedText = formattedText
+            .replace(keywords, '<span class="keyword">$&</span>'); 
+        
+        formattedText = formattedText
+            .replace(numbers, '<span class="number">$&</span>');
+
+        formattedText = formattedText
+            .replace(singleLineComments, '<span class="comment">$&</span>');
+
+        formattedText = formattedText
+            .replace(multiLineComments, '<span class="comment">$&</span>');
+
+        output.innerHTML = formattedText;
     }
 }

@@ -1,6 +1,8 @@
 import { app, Menu, MenuItemConstructorOptions } from 'electron';
 import { openFileMenu, createFileMenu, sendFileData, pingSaveData, pingSaveAsData } from './fileHandler';
 
+//This might be totally useless and I might delete this entire thing later LOL
+
 const isMac = process.platform === 'darwin'
 
 const menuTemplate: any = [
@@ -9,8 +11,11 @@ const menuTemplate: any = [
         submenu: [
             {
                 label: 'New File',
-                click: async () => {
-                    await createFileMenu({ path: null, content: '' }); 
+                click: async (menuItem: any, browserWindow: Window) => {
+                    const result = await createFileMenu({ path: null, content: '' }); 
+                    if (result && browserWindow) {
+                        sendFileData(browserWindow, result);
+                    }
                 }
             },
             {
@@ -67,8 +72,7 @@ const menuTemplate: any = [
     {
         label: 'View',
         submenu: [
-            { role: 'reload' },
-            { role: 'forceReload' },
+
         ]
     },
 ];

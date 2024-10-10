@@ -4,14 +4,15 @@ import Editor from './editor';
 const main = () => {
     const title = document.querySelector('title') as HTMLTitleElement;
     const text = document.getElementById('text-input') as HTMLTextAreaElement;
+    const output = document.getElementById('output') as HTMLDivElement;
     const lineNumbers = document.getElementById('line-numbers') as HTMLTextAreaElement;
     
     const editor: Editor = new Editor(text, lineNumbers);
     editor.setLineNumbers();
     
     text.addEventListener('input', (e) => {
-        e.preventDefault();
         editor.handleLineNumber(text);
+        editor.highlight(text, output);
     });
 
     text.addEventListener('keydown', (e) => {

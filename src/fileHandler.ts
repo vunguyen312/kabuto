@@ -13,7 +13,7 @@ export const openFileMenu = async () => {
   return { path: file, content: content };
 }
 
-export const createFileMenu = async (fileData: FileData): Promise<void> => {
+export const createFileMenu = async (fileData: FileData) => {
   const result = await dialog
   .showSaveDialog({})
   .catch((err) => console.error(err));
@@ -22,6 +22,7 @@ export const createFileMenu = async (fileData: FileData): Promise<void> => {
 
   const { filePath } = result;
   fs.writeFileSync(filePath, fileData.content);
+  return { path: filePath, content: fileData.content };
 }
 
 export const verifyFile = (fileData: FileData): boolean => {

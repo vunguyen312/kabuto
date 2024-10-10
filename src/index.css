@@ -1,6 +1,9 @@
+title {
+  background-color: #ffffff !important;
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family: var(--font-family);
   background-color: var(--bg);
   max-width: 100%;
   height: 100vh;
@@ -14,10 +17,13 @@ body {
   --text-colour: #ffffff;
   --text-size: 0.9rem;
   --line-height: 1.25rem;
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+  Arial, sans-serif;
 }
 
 #editor {
   display: flex;
+  position: relative;
   width: 100%;
   height: 100%;
 }
@@ -33,15 +39,20 @@ body {
   padding: 5px 5px 15px;
   width: 40px;
   overflow: hidden;
+  z-index: 100;
 }
 
 #text-input {
   width: 100%;
   height: 100%;
+  left: 47px;
+  position: absolute;
+  background-color: transparent;
+  color: transparent;
+  font-family: var(--font-family) !important;
   font-size: var(--text-size);
   line-height: var(--line-height);
-  color: var(--text-colour);
-  background-color: var(--bg);
+  caret-color: var(--text-colour);
   white-space: nowrap;
   box-sizing: border-box;
   margin: 0 0 10px;
@@ -53,6 +64,20 @@ body {
 
 textarea:focus {
   outline: none;
+}
+
+#output {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  white-space: pre-wrap;
+  background-color: var(--bg);
+  color: var(--text-colour);
+  font-size: var(--text-size);
+  line-height: var(--line-height);
+  margin: 0 0 10px;
+  padding: 5px;
+  pointer-events: none;
 }
 
 /* Scrollbar */
@@ -74,4 +99,22 @@ textarea:focus {
 ::-webkit-scrollbar-thumb:hover {
   background: rgb(207, 207, 207);
   border-radius: 10px;
+}
+
+/* Syntax Highlighting */
+
+.keyword {
+  color: #b700ff;
+}
+
+.comment {
+  color: #7cd466;
+}
+
+.number {
+  color: #ffd900;
+}
+
+.string {
+  color: #032f62;
 }
