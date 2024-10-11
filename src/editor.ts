@@ -62,34 +62,80 @@ export default class Editor {
         this.handleLineNumber(text);
     }
 
+    tokenize(text: HTMLTextAreaElement) {
+        const regex = /(\bconst\b|\blet\b|\bvar\b|\bif\b|\belse\b|\bfor\b|\bwhile\b|\bfunction\b|\breturn\b|\bclass\b|\bimport\b|\bexport\b|\basync\b|\bawait\b|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|\b\d+(\.\d+)?\b|\/\/.*?$|\/\*[\s\S]*?\*\/|[\(\)\[\]\{\}]|[+\-*/%=&|^~<>!;]=?|&&|\|\|)/gm;
+        //Split JavaScript keywords into tokens.
+        //TODO: Get this from JSON so other languages can be supported.
+        return text.value
+            .split(regex)
+            .filter(token => token);
+    }
+
+    escapeHtml(unsafe: string): string {
+        const escapeMap: { [key: string]: string } = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+    
+        return unsafe.replace(/[&<"'>]/g, (match) => escapeMap[match]);
+    }
+
     highlight(text: HTMLTextAreaElement, output: HTMLDivElement) {
         const keywords = /\b(const|let|var|if|else|for|while|function|return|class|import|export|async|await)\b/g;
-        const strings = /(['"])(?:(?=(\\?))\2.|[^\\])*?\1/g;
+        const strings = /"(.*?)"|'(.*?)'|`(.*?)`/;
         const numbers = /\b\d+(\.\d+)?\b/g;
         const singleLineComments = /\/\/.*?$/gm;
         const multiLineComments = /\/\*[\s\S]*?\*\//g;
-
-        const escapeHTML = (str: string) => {
-            return str
-        }
-
-        let formattedText = escapeHTML(text.value);
-
-        //This gotta be a programming WAR CRIME LOOOOOOOOOOOOOL
-        //This is just a placeholder for now i swear
-        //TODO: Fix whatever the hell this is and add a custom window frame
-        formattedText = formattedText
-            .replace(keywords, '<span class="keyword">$&</span>'); 
+        const brackets = /[\(\)\[\]\{\}]/g;
+        const operators = /[+\-*/%=&|^~<>!;]=?|&&|\|\|/g;
         
-        formattedText = formattedText
-            .replace(numbers, '<span class="number">$&</span>');
+        const tokens = this.tokenize(text);
+    
+        //sorry if u went into cardiac arrest reading this
+        for(let i = 0; i < tokens.length; i++){
+            if(!tokens[i]) continue;
 
-        formattedText = formattedText
-            .replace(singleLineComments, '<span class="comment">$&</span>');
+            const escapedToken = this.escapeHtml(tokens[i]);
 
-        formattedText = formattedText
-            .replace(multiLineComments, '<span class="comment">$&</span>');
+            //We don't want other tokens inside of comments to be highlighted.
+            if(singleLineComments.test(tokens[i])){
+                tokens[i] = `<span class="comment">${escapedToken}</span>`;
+                continue;
+            }
+            if(multiLineComments.test(tokens[i])){
+                tokens[i] = `<span class="comment">${escapedToken}</span>`;
+                continue;
+            }
 
-        output.innerHTML = formattedText;
+            if(keywords.test(tokens[i])){
+                tokens[i] = `<span class="keyword">${escapedToken}</span>`;
+                continue;
+            }
+            
+            if(strings.test(tokens[i])){
+                tokens[i] = `<span class="string">${escapedToken}</span>`;
+                continue;
+            }
+            
+            if(numbers.test(tokens[i])){
+                tokens[i] = `<span class="number">${escapedToken}</span>`;
+                continue;
+            }
+
+            if(tokens[i].match(brackets)){
+                tokens[i] = `<span class="bracket">${escapedToken}</span>`;
+                continue;
+            }
+
+            if(tokens[i].match(operators)){
+                tokens[i] = `<span class="operator">${escapedToken}</span>`;
+                continue;
+            }
+        }
+        
+        output.innerHTML = tokens.join('');
     }
 }

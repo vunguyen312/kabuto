@@ -17,13 +17,11 @@ body {
   --text-colour: #ffffff;
   --text-size: 0.9rem;
   --line-height: 1.25rem;
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-  Arial, sans-serif;
+  --font-family: 'Fira Code', monospace;
 }
 
 #editor {
   display: flex;
-  position: relative;
   width: 100%;
   height: 100%;
 }
@@ -42,42 +40,37 @@ body {
   z-index: 100;
 }
 
-#text-input {
-  width: 100%;
+#text-input, #output {
+  width: calc(100% - 50px);
   height: 100%;
-  left: 47px;
+  left: 50px;
   position: absolute;
-  background-color: transparent;
-  color: transparent;
+  background-color: var(--bg);
+  color: rgb(127, 193, 255);
   font-family: var(--font-family) !important;
   font-size: var(--text-size);
   line-height: var(--line-height);
   caret-color: var(--text-colour);
   white-space: nowrap;
   box-sizing: border-box;
-  margin: 0 0 10px;
   padding: 5px;
   border: none;
   resize: none; 
-  overflow-x: scroll;
+  overflow-x: auto;
+}
+
+#text-input {
+  color: transparent;
+  background-color: transparent;
+}
+
+#output {
+  pointer-events: none !important;
+  white-space: pre;
 }
 
 textarea:focus {
   outline: none;
-}
-
-#output {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  white-space: pre-wrap;
-  background-color: var(--bg);
-  color: var(--text-colour);
-  font-size: var(--text-size);
-  line-height: var(--line-height);
-  margin: 0 0 10px;
-  padding: 5px;
-  pointer-events: none;
 }
 
 /* Scrollbar */
@@ -104,7 +97,7 @@ textarea:focus {
 /* Syntax Highlighting */
 
 .keyword {
-  color: #b700ff;
+  color: #5480dd;
 }
 
 .comment {
@@ -112,9 +105,17 @@ textarea:focus {
 }
 
 .number {
-  color: #ffd900;
+  color: #9e37ff;
 }
 
 .string {
-  color: #032f62;
+  color: #da8638;
+}
+
+.bracket {
+  color: #ffee00;
+}
+
+.operator {
+  color: #e2e2e2;
 }

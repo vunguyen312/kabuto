@@ -22,12 +22,15 @@ const main = () => {
     //Sync scroll
     text.addEventListener('scroll', () => {
         lineNumbers.scrollTop = text.scrollTop;
+        output.scrollTop = text.scrollTop;
+        output.scrollLeft = text.scrollLeft;
     });
     
     window.electron.receiveFileData((e: Event, fileData: FileData) => {
         text.value = fileData.content; 
         editor.filePath = fileData.path;
         editor.setLineNumbers();
+        editor.highlight(text, output);
         title.textContent = `Simple Text Editor - ${editor.filePath}`;
     });
 
