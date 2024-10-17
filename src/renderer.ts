@@ -13,17 +13,19 @@ const main = () => {
     text.addEventListener('input', (e) => {
         editor.handleLineNumber(text);
         editor.highlight(text, output);
+        editor.getCaretPosition(output);
     });
 
     text.addEventListener('keydown', (e) => {
         editor.handleUndo(e, text);
     });
+
+    text.addEventListener('click', () => {
+        editor.getCaretPosition(output);
+    });
     
-    //Sync scroll
     text.addEventListener('scroll', () => {
-        lineNumbers.scrollTop = text.scrollTop;
-        output.scrollTop = text.scrollTop;
-        output.scrollLeft = text.scrollLeft;
+        editor.syncScroll(output);
     });
     
     window.electron.receiveFileData((e: Event, fileData: FileData) => {

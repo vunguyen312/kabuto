@@ -9,11 +9,14 @@ body {
   height: 100vh;
   margin: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 :root {
   --bg: #1b1b1b;
   --bg-secondary: #242424;
+  --bg-accent: #414141;
   --text-colour: #ffffff;
   --text-size: 0.9rem;
   --line-height: 1.25rem;
@@ -24,6 +27,7 @@ body {
   display: flex;
   width: 100%;
   height: 100%;
+  position: relative;
 }
 
 #line-numbers {
@@ -67,6 +71,16 @@ body {
 #output {
   pointer-events: none !important;
   white-space: pre;
+}
+
+#stats {
+  position: relative;
+  background-color: var(--bg-accent);
+  font-family: var(--font-family);
+  font-size: var(--text-size);
+  color: var(--text-colour);
+  padding: .25rem;
+  width: 100%;
 }
 
 textarea:focus {

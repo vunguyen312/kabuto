@@ -63,7 +63,7 @@ export default class Editor {
     }
 
     tokenize(text: HTMLTextAreaElement) {
-        const regex = /(\bconst\b|\blet\b|\bvar\b|\bif\b|\belse\b|\bfor\b|\bwhile\b|\bfunction\b|\breturn\b|\bclass\b|\bimport\b|\bexport\b|\basync\b|\bawait\b|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|\b\d+(\.\d+)?\b|\/\/.*?$|\/\*[\s\S]*?\*\/|[\(\)\[\]\{\}]|[+\-*/%=&|^~<>!;]=?|&&|\|\|)/gm;
+        const regex = /(\bconst\b|\blet\b|\bvar\b|\bif\b|\belse\b|\bfor\b|\bwhile\b|\bfunction\b|\breturn\b|\bclass\b|\bimport\b|\bexport\b|\basync\b|\bawait\b|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|\b\d+(\.\d+)?\b|\/\/.*?$|\/\*[\s\S]*?\*\/|[\(\)\[\]\{\}]|[+\-*/%=&|^~<>!;.]=?|&&|\|\|)/gm;
         //Split JavaScript keywords into tokens.
         //TODO: Get this from JSON so other languages can be supported.
         return text.value
@@ -83,6 +83,7 @@ export default class Editor {
         return unsafe.replace(/[&<"'>]/g, (match) => escapeMap[match]);
     }
 
+    //TODO: Optimize and add support for other languages.
     highlight(text: HTMLTextAreaElement, output: HTMLDivElement) {
         const keywords = /\b(const|let|var|if|else|for|while|function|return|class|import|export|async|await)\b/g;
         const strings = /"(.*?)"|'(.*?)'|`(.*?)`/;
@@ -90,13 +91,16 @@ export default class Editor {
         const singleLineComments = /\/\/.*?$/gm;
         const multiLineComments = /\/\*[\s\S]*?\*\//g;
         const brackets = /[\(\)\[\]\{\}]/g;
-        const operators = /[+\-*/%=&|^~<>!;]=?|&&|\|\|/g;
+        const operators = /[+\-*/%=&|^~<>!;.]=?|&&|\|\|/g;
         
         const tokens = this.tokenize(text);
     
         //sorry if u went into cardiac arrest reading this
         for(let i = 0; i < tokens.length; i++){
-            if(!tokens[i]) continue;
+            //Add a space to the end of the last token if it's a newline.
+            if(i === tokens.length - 1 && tokens[i] === '\n'){
+                tokens[i] += ' ';
+            };
 
             const escapedToken = this.escapeHtml(tokens[i]);
 
@@ -137,5 +141,22 @@ export default class Editor {
         }
         
         output.innerHTML = tokens.join('');
+    }
+
+    syncScroll(output: HTMLDivElement): void {
+        this.lineNumbers.scrollTop = this.text.scrollTop;
+        output.scrollTop = this.text.scrollTop;
+        output.scrollLeft = this.text.scrollLeft;
+    }
+
+    getCurrRow(): number {
+        return this.text.value
+            .substring(0, this.text.selectionStart)
+            .split('\n').length;
+    }
+
+    getCaretPosition(output: HTMLDivElement) {
+        const row = this.getCurrRow();
+        return row;
     }
 }
