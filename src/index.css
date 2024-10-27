@@ -38,16 +38,16 @@ body {
   text-align: right;
   border: none;
   resize: none;
-  padding: 5px 5px 15px;
-  width: 40px;
+  padding: 5px 5px 15px 0px;
+  width: 50px;
   overflow: hidden;
   z-index: 100;
 }
 
 #text-input, #output {
-  width: calc(100% - 50px);
+  width: calc(100% - 55px);
   height: 100%;
-  left: 50px;
+  left: 55px;
   position: absolute;
   background-color: var(--bg);
   color: rgb(127, 193, 255);
@@ -81,6 +81,11 @@ body {
   color: var(--text-colour);
   padding: .25rem;
   width: 100%;
+}
+
+#right-stats {
+  float: right;
+  margin-right: 10px;
 }
 
 textarea:focus {

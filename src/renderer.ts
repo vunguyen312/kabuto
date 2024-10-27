@@ -6,14 +6,21 @@ const main = () => {
     const text = document.getElementById('text-input') as HTMLTextAreaElement;
     const output = document.getElementById('output') as HTMLDivElement;
     const lineNumbers = document.getElementById('line-numbers') as HTMLTextAreaElement;
+
+    const statTrackers = {
+        ln: document.getElementById('ln') as HTMLSpanElement,
+        col: document.getElementById('col') as HTMLSpanElement,
+        char: document.getElementById('char') as HTMLSpanElement,
+        totalLn: document.getElementById('totalLn') as HTMLSpanElement
+    }
     
-    const editor: Editor = new Editor(text, lineNumbers);
+    const editor: Editor = new Editor(text, lineNumbers, statTrackers);
     editor.setLineNumbers();
     
-    text.addEventListener('input', (e) => {
+    text.addEventListener('input', () => {
         editor.handleLineNumber(text);
         editor.highlight(text, output);
-        editor.getCaretPosition(output);
+        editor.getStats();
     });
 
     text.addEventListener('keydown', (e) => {
@@ -21,7 +28,7 @@ const main = () => {
     });
 
     text.addEventListener('click', () => {
-        editor.getCaretPosition(output);
+        editor.getStats();
     });
     
     text.addEventListener('scroll', () => {
@@ -32,6 +39,7 @@ const main = () => {
         text.value = fileData.content; 
         editor.filePath = fileData.path;
         editor.setLineNumbers();
+        editor.getStats();
         editor.highlight(text, output);
         title.textContent = `Simple Text Editor - ${editor.filePath}`;
     });

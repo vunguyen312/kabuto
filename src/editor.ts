@@ -3,12 +3,22 @@ export default class Editor {
     private lineNumbers: HTMLTextAreaElement;
     private currentRowCount: number;
     private prevRowCount: number;
+    private lnTracker: HTMLSpanElement;
+    private colTracker: HTMLSpanElement;
+    private charTracker: HTMLSpanElement;
+    private totalLnTracker: HTMLSpanElement;
     public filePath: string;
 
-    constructor(text: HTMLTextAreaElement, lineNumbers: HTMLTextAreaElement) {
+    constructor(text: HTMLTextAreaElement, lineNumbers: HTMLTextAreaElement, stats: Stats) {
         this.text = text;
         this.lineNumbers = lineNumbers;
+
+        //Stats
         this.currentRowCount = text.value.split('\n').length;
+        this.lnTracker = stats.ln;
+        this.colTracker = stats.col;
+        this.charTracker = stats.char;
+        this.totalLnTracker = stats.totalLn;
     }
     
     setLineNumbers(){
@@ -150,13 +160,37 @@ export default class Editor {
     }
 
     getCurrRow(): number {
-        return this.text.value
-            .substring(0, this.text.selectionStart)
-            .split('\n').length;
+        const selectionStart = this.text.selectionStart;
+        const remainingText = this.text.value.substring(0, selectionStart);
+        return remainingText.split('\n').length;
     }
 
-    getCaretPosition(output: HTMLDivElement) {
+    getCurrCol(): number {
+        const selectionStart = this.text.selectionStart;
+        const textBeforeCursor = this.text.value.substring(0, selectionStart);
+        //The length of a substring made from the last selected line to the cursor is technically the current column.
+        const currentRow = textBeforeCursor
+            .split('\n')
+            .pop() || '';
+        return currentRow.length + 1;
+    }
+
+    getCharCount(): number {
+        return this.text.value.length;
+    }
+    
+    updateStatDisplay(row: number, col: number, char: number, totalLn: number) {
+        this.lnTracker.textContent = `Ln: ${row.toString()},`;
+        this.colTracker.textContent = `Col: ${col.toString()}`;
+        this.charTracker.textContent = `${char.toString()} characters,`;
+        this.totalLnTracker.textContent = `${totalLn} lines`;
+    }
+
+    getStats() {
         const row = this.getCurrRow();
-        return row;
+        const col = this.getCurrCol();
+        const char = this.getCharCount();
+        const totalLn = this.prevRowCount;
+        this.updateStatDisplay(row, col, char, totalLn);
     }
 }
