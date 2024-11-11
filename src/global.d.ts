@@ -7,13 +7,6 @@ declare global {
         prevRowCount: number;
     }
 
-    interface Stats {
-        ln: HTMLSpanElement;
-        col: HTMLSpanElement;
-        char: HTMLSpanElement;
-        totalLn: HTMLSpanElement;
-    }
-
     interface FileData {
         path: string | undefined;
         content: string;

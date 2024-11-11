@@ -1,3 +1,10 @@
+interface Stats {
+    ln: HTMLSpanElement;
+    col: HTMLSpanElement;
+    char: HTMLSpanElement;
+    totalLn: HTMLSpanElement;
+}
+
 export default class Editor {
     private text: HTMLTextAreaElement;
     private lineNumbers: HTMLTextAreaElement;
@@ -108,7 +115,9 @@ export default class Editor {
         //sorry if u went into cardiac arrest reading this
         for(let i = 0; i < tokens.length; i++){
             //Add a space to the end of the last token if it's a newline.
-            if(i === tokens.length - 1 && tokens[i] === '\n'){
+            //Mostly just to catch the edge case of line breaks being placed
+            //simultaneously.
+            if(i === tokens.length - 1 && tokens[i].match(/\n/g) ){
                 tokens[i] += ' ';
             };
 
