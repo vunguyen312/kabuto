@@ -1,5 +1,6 @@
 import { dialog } from 'electron';
 import * as fs from 'fs';
+import FileData from './types/fileData';
 
 export const openFileMenu = async () => {
   const result = await dialog.showOpenDialog({

@@ -79,6 +79,22 @@ export default class Editor {
         this.handleLineNumber(text);
     }
 
+    //TODO: Add custom undo with a stack or smth cuz it dont work w the tab spaces
+    handleTab(e: KeyboardEvent, text: HTMLTextAreaElement, output: HTMLDivElement) {
+        if(e.key !== 'Tab') return;
+        const firstHalf = text.value.substring(0, text.selectionStart);
+        const secondHalf = text.value.substring(text.selectionEnd);
+        text.value = firstHalf + '    ' + secondHalf;
+        output.textContent = text.value;
+
+        //Handle mouse repositioning
+        text.selectionEnd = firstHalf.length + 4;
+
+        //Update line numbers and stats
+        this.highlight(text, output);
+        this.getStats();
+    }
+
     tokenize(text: HTMLTextAreaElement) {
         const regex = /(\bconst\b|\blet\b|\bvar\b|\bif\b|\belse\b|\bfor\b|\bwhile\b|\bfunction\b|\breturn\b|\bclass\b|\bimport\b|\bexport\b|\basync\b|\bawait\b|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|\b\d+(\.\d+)?\b|\/\/.*?$|\/\*[\s\S]*?\*\/|[\(\)\[\]\{\}]|[+\-*/%=&|^~<>!;.]=?|&&|\|\|)/gm;
         //Split JavaScript keywords into tokens.

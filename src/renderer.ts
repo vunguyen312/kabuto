@@ -1,5 +1,6 @@
 import './index.css';
 import Editor from './editor';
+import FileData from './types/fileData';
 
 const main = () => {
     const title = document.querySelector('title') as HTMLTitleElement;
@@ -25,6 +26,7 @@ const main = () => {
 
     text.addEventListener('keydown', (e) => {
         editor.handleUndo(e, text);
+        editor.handleTab(e, text, output);
     });
 
     text.addEventListener('click', () => {
