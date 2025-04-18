@@ -1,5 +1,6 @@
 import './index.css';
-import Editor from './editor';
+import Editor from './Editor';
+import GapBuffer from './collections/GapBuffer';
 import FileData from './types/fileData';
 
 const main = () => {
@@ -14,19 +15,40 @@ const main = () => {
         char: document.getElementById('char') as HTMLSpanElement,
         totalLn: document.getElementById('totalLn') as HTMLSpanElement
     }
-    
+
+    const gapBuffer: GapBuffer = new GapBuffer("");
     const editor: Editor = new Editor(text, lineNumbers, statTrackers);
     editor.setLineNumbers();
     
     text.addEventListener('input', () => {
         editor.handleLineNumber(text);
-        editor.highlight(text, output);
         editor.getStats();
     });
 
     text.addEventListener('keydown', (e) => {
+        e.preventDefault();
         editor.handleUndo(e, text);
         editor.handleTab(e, text, output);
+        const cursorPos = gapBuffer.getCursorPos();
+
+        if(e.key === "Enter"){
+            gapBuffer.insert('\n', cursorPos);
+            updateTextContent(text, editor, output, gapBuffer);
+            gapBuffer.setCursorPos(cursorPos + 1);
+            return;
+        }
+
+        if(e.key === "Backspace"){
+            gapBuffer.delete(cursorPos);
+            updateTextContent(text, editor, output, gapBuffer);
+            return;
+        }
+
+        if(e.key.length === 1){
+            gapBuffer.insert(e.key, cursorPos);
+            updateTextContent(text, editor, output, gapBuffer);
+            gapBuffer.setCursorPos(cursorPos + 1);
+        }
     });
 
     text.addEventListener('click', () => {
@@ -53,6 +75,11 @@ const main = () => {
     window.electron.pingSaveAsData(() => {
         window.electron.saveFileAsData({ path: editor.filePath, content: text.value });
     });
+}
+
+const updateTextContent = (textArea: HTMLTextAreaElement, editor: Editor, output: HTMLDivElement, gapBuffer: GapBuffer): void => {
+    textArea.value = gapBuffer.toString();
+    editor.highlight(textArea, output);
 }
 
 main();

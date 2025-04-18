@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import FileData from "./types/fileData";
 
 contextBridge.exposeInMainWorld('electron', {
     receiveFileData: (callback: (event: Electron.IpcRendererEvent, fileData: FileData) => void) => {
