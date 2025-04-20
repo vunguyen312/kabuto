@@ -2,84 +2,108 @@ import './index.css';
 import Editor from './Editor';
 import GapBuffer from './collections/GapBuffer';
 import FileData from './types/fileData';
+import Stats from "./types/stats";
 
-const main = () => {
-    const title = document.querySelector('title') as HTMLTitleElement;
-    const text = document.getElementById('text-input') as HTMLTextAreaElement;
-    const output = document.getElementById('output') as HTMLDivElement;
-    const lineNumbers = document.getElementById('line-numbers') as HTMLTextAreaElement;
+class Renderer {
+    private title: HTMLTitleElement;
+    private text: HTMLTextAreaElement;
+    private output: HTMLDivElement;
+    private lineNumbers: HTMLTextAreaElement;
+    private statTrackers: Stats;
+    private gapBuffer: GapBuffer;
+    private editor: Editor;
 
-    const statTrackers = {
-        ln: document.getElementById('ln') as HTMLSpanElement,
-        col: document.getElementById('col') as HTMLSpanElement,
-        char: document.getElementById('char') as HTMLSpanElement,
-        totalLn: document.getElementById('totalLn') as HTMLSpanElement
+    constructor(){
+        this.title = document.querySelector('title') as HTMLTitleElement;
+        this.text = document.getElementById('text-input') as HTMLTextAreaElement;
+        this.output = document.getElementById('output') as HTMLDivElement;
+        this.lineNumbers = document.getElementById('line-numbers') as HTMLTextAreaElement;
+
+        this.statTrackers = {
+            ln: document.getElementById('ln') as HTMLSpanElement,
+            col: document.getElementById('col') as HTMLSpanElement,
+            char: document.getElementById('char') as HTMLSpanElement,
+            totalLn: document.getElementById('totalLn') as HTMLSpanElement
+        }
+
+        this.gapBuffer = new GapBuffer("");
+        this.editor = new Editor(this.text, this.lineNumbers, this.statTrackers);
     }
 
-    const gapBuffer: GapBuffer = new GapBuffer("");
-    const editor: Editor = new Editor(text, lineNumbers, statTrackers);
-    editor.setLineNumbers();
-    
-    text.addEventListener('input', () => {
-        editor.handleLineNumber(text);
-        editor.getStats();
-    });
+    initializeEditor(): void{
+        this.editor.setLineNumbers();
+        this.setEventListeners();
 
-    text.addEventListener('keydown', (e) => {
+        window.electron.receiveFileData((e: Event, fileData: FileData) => this.loadFileContent(e, fileData));
+        window.electron.pingSaveData(() => window.electron.saveFileData({ path: this.editor.filePath, content: this.text.value }));
+        window.electron.pingSaveAsData(() => window.electron.saveFileAsData({ path: this.editor.filePath, content: this.text.value }));
+    }
+
+    setEventListeners(): void {
+        //this.text.addEventListener('input', () => this.listenForInput());
+        this.text.addEventListener('keydown', (e: KeyboardEvent) => this.listenForKeystrokes(e));
+        this.text.addEventListener('click', () => this.editor.getStats());
+        this.text.addEventListener('scroll', () => this.editor.syncScroll(this.output));
+    }
+
+    //listenForInput(): void {
+    //    this.editor.handleLineNumber(this.text);
+    //    this.editor.getStats();
+    //}
+
+    listenForKeystrokes(e: KeyboardEvent): void {
+        //this.editor.handleLineNumber(this.text);
+        //this.editor.getStats();
         e.preventDefault();
-        editor.handleUndo(e, text);
-        editor.handleTab(e, text, output);
-        const cursorPos = gapBuffer.getCursorPos();
+        this.editor.handleUndo(e, this.text);
+        this.editor.handleTab(e, this.text, this.output);
+        //Cursor pos refers to GapBuffer's gap
+        const cursorPos = this.gapBuffer.getCursorPos();
+        //Caret pos refers to visual cursor on the editor
+        const caretPos = this.editor.getCaretPosition();
 
-        if(e.key === "Enter"){
-            gapBuffer.insert('\n', cursorPos);
-            updateTextContent(text, editor, output, gapBuffer);
-            gapBuffer.setCursorPos(cursorPos + 1);
-            return;
+        //Might move all this key stuff to the editor class later
+        switch(e.key){
+            case "Enter":
+                this.editor.handleEnter(cursorPos, this.gapBuffer);
+                break;
+            case "Backspace":
+                this.editor.handleBackspace(cursorPos, this.gapBuffer, caretPos);
+                break;
+            case "ArrowRight":
+                this.editor.handleRightArrow(cursorPos, this.gapBuffer, caretPos);
+                break;
+            case "ArrowUp":
+                //this.handleRightArrow(cursorPos);
+                break;
+            case "ArrowLeft":
+                this.editor.handleLeftArrow(cursorPos, this.gapBuffer, caretPos);
+                break;
+            case "ArrowDown":
+                //this.handleRightArrow(cursorPos);
+                break;
+            default:
+                this.editor.handleInput(cursorPos, this.gapBuffer, e, caretPos);
+                break;
         }
 
-        if(e.key === "Backspace"){
-            gapBuffer.delete(cursorPos);
-            updateTextContent(text, editor, output, gapBuffer);
-            return;
-        }
+        this.editor.updateEditorText(this.gapBuffer, this.output);
+        this.editor.getStats();
+    }
 
-        if(e.key.length === 1){
-            gapBuffer.insert(e.key, cursorPos);
-            updateTextContent(text, editor, output, gapBuffer);
-            gapBuffer.setCursorPos(cursorPos + 1);
-        }
-    });
+    //TODO: Add compability with the GapBuffer
+    loadFileContent(e: Event, fileData: FileData): void {
+        this.text.value = fileData.content;
+        this.editor.filePath = fileData.path;
 
-    text.addEventListener('click', () => {
-        editor.getStats();
-    });
-    
-    text.addEventListener('scroll', () => {
-        editor.syncScroll(output);
-    });
-    
-    window.electron.receiveFileData((e: Event, fileData: FileData) => {
-        text.value = fileData.content; 
-        editor.filePath = fileData.path;
-        editor.setLineNumbers();
-        editor.getStats();
-        editor.highlight(text, output);
-        title.textContent = `Simple Text Editor - ${editor.filePath}`;
-    });
-
-    window.electron.pingSaveData(() => {
-        window.electron.saveFileData({ path: editor.filePath, content: text.value });
-    });
-
-    window.electron.pingSaveAsData(() => {
-        window.electron.saveFileAsData({ path: editor.filePath, content: text.value });
-    });
+        this.editor.setLineNumbers();
+        this.editor.updateEditorText(this.gapBuffer, this.output);
+        this.editor.getStats();
+        this.title.textContent = `Simple Text Editor - ${this.editor.filePath}`;
+    }
 }
 
-const updateTextContent = (textArea: HTMLTextAreaElement, editor: Editor, output: HTMLDivElement, gapBuffer: GapBuffer): void => {
-    textArea.value = gapBuffer.toString();
-    editor.highlight(textArea, output);
-}
+const renderer = new Renderer();
 
-main();
+renderer.initializeEditor();
+

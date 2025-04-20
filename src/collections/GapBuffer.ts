@@ -75,9 +75,9 @@ export default class GapBuffer {
 
     moveCursor(position: number): void {
         if(position < this.gapLeft){
-            this.left(position);
+            return this.left(position);
         } 
-        return this.right(position);
+        this.right(position);
     }
 
     insert(input: string, position: number): void {
@@ -98,6 +98,7 @@ export default class GapBuffer {
         }
     }
 
+    //TODO: Close gap size on the right when deleting. Might cause some performance issues during long editing sessions.
     delete(position: number): void {
         if(position - 1 < 0) return;
         this.moveCursor(position);
@@ -115,9 +116,22 @@ export default class GapBuffer {
         return this.cursorPos;
     }
 
+    getBuffer(): Array<string> {
+        return this.buffer;
+    }
+
+    setBuffer(buffer: string[]): void {
+        this.buffer = buffer;
+    }
+
+    getCurrGap(): number {
+        return this.gapRight - this.gapLeft + 1;
+    }
+
     toString(): string {
         return this.buffer
-            .filter((_, index) => index < this.gapLeft || index > this.gapRight)
+        //For testing
+            //.filter((_, index) => index < this.gapLeft || index > this.gapRight)
             .join('');
     }
 }

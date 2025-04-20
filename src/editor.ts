@@ -1,9 +1,5 @@
-interface Stats {
-    ln: HTMLSpanElement;
-    col: HTMLSpanElement;
-    char: HTMLSpanElement;
-    totalLn: HTMLSpanElement;
-}
+import GapBuffer from "./collections/GapBuffer";
+import Stats from "./types/stats";
 
 export default class Editor {
     private text: HTMLTextAreaElement;
@@ -14,6 +10,7 @@ export default class Editor {
     private colTracker: HTMLSpanElement;
     private charTracker: HTMLSpanElement;
     private totalLnTracker: HTMLSpanElement;
+    private caretPosition: number;
     public filePath: string;
 
     constructor(text: HTMLTextAreaElement, lineNumbers: HTMLTextAreaElement, stats: Stats) {
@@ -26,9 +23,10 @@ export default class Editor {
         this.colTracker = stats.col;
         this.charTracker = stats.char;
         this.totalLnTracker = stats.totalLn;
+        this.caretPosition = 0;
     }
     
-    setLineNumbers(){
+    setLineNumbers(): void {
         this.prevRowCount = this.text.value.split('\n').length;
         let lineNumbers = '';
         for(let i = 1; i <= this.prevRowCount; i++){
@@ -38,49 +36,42 @@ export default class Editor {
         console.log(this.currentRowCount, "set");
     }
 
-    addLineNumber(addedRows: number, prevRowCount: number){
-        const totalRows = prevRowCount + addedRows;
-
-        for(let i = prevRowCount + 1; i <= totalRows; i++){
-            if(this.lineNumbers.value.slice(-1) !== '\n'){
-                this.lineNumbers.value += '\n';
-            }
-
-            this.lineNumbers.value += `${i}`;
-        }
-        console.log(addedRows, "added line");
-    }
-
-    removeLineNumber(removedRows: number){
-        const rows = this.lineNumbers.value.split('\n');
-        const lastRow = this.lineNumbers.value.slice(-1);
-        if(lastRow === '\n'){
-            rows.length -= 1;
-        }
-        rows.length -= removedRows;
-        this.lineNumbers.value = rows.join('\n');
-        console.log(rows.length, "removed line");
-    }
-
-    handleLineNumber(text: HTMLTextAreaElement): void{
-        this.currentRowCount = text.value.split('\n').length;
-        if(this.currentRowCount > this.prevRowCount){
-            this.addLineNumber(this.currentRowCount - this.prevRowCount, this.prevRowCount);
-        }
-        if(this.currentRowCount < this.prevRowCount){
-            this.removeLineNumber(this.prevRowCount - this.currentRowCount);
-        }
+    addSingleLineNumber(): void {
         this.prevRowCount = this.currentRowCount;
+        this.currentRowCount++;
+        this.lineNumbers.value += `${this.currentRowCount}`;
+        this.lineNumbers.value += '\n';
     }
 
-    handleUndo(e: KeyboardEvent, text: HTMLTextAreaElement) {
+    removeSingleLineNumber(): void {
+        if(this.lineNumbers.value.length <= 2) return;
+
+        let currIndex = this.lineNumbers.value.length - 1;
+        const lastRow = this.lineNumbers.value[currIndex];
+        //Skipping the first instance of a line break so it doesn't tamper with the loop
+        if(lastRow === '\n'){
+            currIndex--;
+        }
+
+        while(this.lineNumbers.value[currIndex] !== '\n'){
+            currIndex--;
+        }
+
+        //We want to leave the last line break alone which is it's included in the substring.
+        //This is because the line add follows the pattern of {number}\n
+        this.lineNumbers.value = this.lineNumbers.value.substring(0, currIndex + 1);
+        this.prevRowCount = this.currentRowCount;
+        this.currentRowCount--;
+    }
+
+    handleUndo(e: KeyboardEvent, text: HTMLTextAreaElement): void {
         if(e.key !== 'Ctrl' && e.key !== 'z') return;
         this.prevRowCount = text.value.split('\n').length;
-        this.handleLineNumber(text);
+        //this.handleLineNumber(text);
     }
 
     //TODO: Add custom undo with a stack or smth cuz it dont work w the tab spaces
-    handleTab(e: KeyboardEvent, text: HTMLTextAreaElement, output: HTMLDivElement) {
+    handleTab(e: KeyboardEvent, text: HTMLTextAreaElement, output: HTMLDivElement): void  {
         if(e.key !== 'Tab') return;
         const firstHalf = text.value.substring(0, text.selectionStart);
         const secondHalf = text.value.substring(text.selectionEnd);
@@ -95,7 +86,7 @@ export default class Editor {
         this.getStats();
     }
 
-    tokenize(text: HTMLTextAreaElement) {
+    tokenize(text: HTMLTextAreaElement): string[] {
         const regex = /(\bconst\b|\blet\b|\bvar\b|\bif\b|\belse\b|\bfor\b|\bwhile\b|\bfunction\b|\breturn\b|\bclass\b|\bimport\b|\bexport\b|\basync\b|\bawait\b|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|\b\d+(\.\d+)?\b|\/\/.*?$|\/\*[\s\S]*?\*\/|[\(\)\[\]\{\}]|[+\-*/%=&|^~<>!;.]=?|&&|\|\|)/gm;
         //Split JavaScript keywords into tokens.
         //TODO: Get this from JSON so other languages can be supported.
@@ -117,7 +108,7 @@ export default class Editor {
     }
 
     //TODO: Optimize and add support for other languages.
-    highlight(text: HTMLTextAreaElement, output: HTMLDivElement) {
+    highlight(text: HTMLTextAreaElement, output: HTMLDivElement): void {
         const keywords = /\b(const|let|var|if|else|for|while|function|return|class|import|export|async|await)\b/g;
         const strings = /"(.*?)"|'(.*?)'|`(.*?)`/;
         const numbers = /\b\d+(\.\d+)?\b/g;
@@ -204,18 +195,79 @@ export default class Editor {
         return this.text.value.length;
     }
     
-    updateStatDisplay(row: number, col: number, char: number, totalLn: number) {
+    updateStatDisplay(row: number, col: number, char: number, totalLn: number): void {
         this.lnTracker.textContent = `Ln: ${row.toString()},`;
         this.colTracker.textContent = `Col: ${col.toString()}`;
         this.charTracker.textContent = `${char.toString()} characters,`;
         this.totalLnTracker.textContent = `${totalLn} lines`;
     }
 
-    getStats() {
+    getStats(): void {
         const row = this.getCurrRow();
         const col = this.getCurrCol();
         const char = this.getCharCount();
-        const totalLn = this.prevRowCount;
+        const totalLn = this.currentRowCount;
         this.updateStatDisplay(row, col, char, totalLn);
+    }
+
+    getCaretPosition(): number {
+        return this.caretPosition;
+    }
+
+    setCaretPosition(position: number): void {
+        this.caretPosition = position;
+    }
+
+    //TODO: Calculate caret pos for enter
+    handleEnter(cursorPos: number, gapBuffer: GapBuffer): void {
+        gapBuffer.insert('\n', cursorPos);
+        gapBuffer.setCursorPos(cursorPos + 1);
+        this.addSingleLineNumber();
+    }
+
+    handleBackspace(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
+        //If the next backspace deletes a line then remove a line number
+        const buffer = gapBuffer.getBuffer();
+        if(buffer[cursorPos - 1] !== '\n'){
+            this.removeSingleLineNumber();
+        }
+
+        gapBuffer.delete(cursorPos);
+        if(caretPos - 1 < 0) return;
+        this.setCaretPosition(caretPos - 1);
+    }
+
+    handleRightArrow(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
+        const bufferLength = gapBuffer.getBuffer().length;
+        const currGapSize = gapBuffer.getCurrGap();
+        const newPos = cursorPos + 1;
+        if(newPos > bufferLength - currGapSize) return;
+        gapBuffer.setCursorPos(newPos);
+        gapBuffer.moveCursor(newPos);
+
+        if(caretPos + 1 > this.getCharCount()) return;
+        this.setCaretPosition(caretPos + 1);
+    }
+
+    handleLeftArrow(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
+        const newPos = cursorPos - 1;
+        if(newPos < 0) return;
+        gapBuffer.setCursorPos(newPos);
+        gapBuffer.moveCursor(newPos);
+
+        if(caretPos - 1 < 0) return;
+        this.setCaretPosition(caretPos - 1);
+    }
+
+    handleInput(cursorPos: number, gapBuffer: GapBuffer, e: KeyboardEvent, caretPos: number): void {
+        gapBuffer.insert(e.key, cursorPos);
+        gapBuffer.setCursorPos(cursorPos + 1);
+        this.setCaretPosition(caretPos + 1);
+    }
+
+    updateEditorText(gapBuffer: GapBuffer, output: HTMLDivElement): void {
+        this.text.value = gapBuffer.toString();
+        this.text.setSelectionRange(this.caretPosition, this.caretPosition);
+        this.highlight(this.text, output);
     }
 }
