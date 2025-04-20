@@ -105,7 +105,6 @@ export default class GapBuffer {
         //Gotta set the cursor pos in here because users can press backspace at the start.
         this.cursorPos--;
         this.buffer[this.gapLeft] = '_';
-        console.log(this.buffer);
     }
 
     setCursorPos(cursorPos: number): void {
