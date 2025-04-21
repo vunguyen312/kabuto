@@ -56,7 +56,6 @@ class Renderer {
         //this.editor.getStats();
         e.preventDefault();
         this.editor.handleUndo(e, this.text);
-        this.editor.handleTab(e, this.text, this.output);
         //Cursor pos refers to GapBuffer's gap
         const cursorPos = this.gapBuffer.getCursorPos();
         //Caret pos refers to visual cursor on the editor
@@ -69,6 +68,9 @@ class Renderer {
                 break;
             case "Backspace":
                 this.editor.handleBackspace(cursorPos, this.gapBuffer, caretPos);
+                break;
+            case "Tab":
+                this.editor.handleTab(cursorPos, this.gapBuffer, caretPos);
                 break;
             case "ArrowRight":
                 this.editor.handleRightArrow(cursorPos, this.gapBuffer, caretPos);

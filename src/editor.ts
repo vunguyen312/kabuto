@@ -11,6 +11,8 @@ export default class Editor {
     private charTracker: HTMLSpanElement;
     private totalLnTracker: HTMLSpanElement;
     private caretPosition: number;
+    private charPairs: Map<string, string>;
+    private tabSpaces: number;
     public filePath: string;
 
     constructor(text: HTMLTextAreaElement, lineNumbers: HTMLTextAreaElement, stats: Stats) {
@@ -24,6 +26,18 @@ export default class Editor {
         this.charTracker = stats.char;
         this.totalLnTracker = stats.totalLn;
         this.caretPosition = 0;
+
+        this.charPairs = new Map([
+            ['{', '}'],
+            ['[', ']'],
+            ["'", "'"],
+            ['"', '"'],
+            ['(', ')'],
+            ['`', '`']
+        ]);
+
+        //Settings
+        this.tabSpaces = 4;
     }
     
     setLineNumbers(): void {
@@ -68,22 +82,6 @@ export default class Editor {
         if(e.key !== 'Ctrl' && e.key !== 'z') return;
         this.prevRowCount = text.value.split('\n').length;
         //this.handleLineNumber(text);
-    }
-
-    //TODO: Add custom undo with a stack or smth cuz it dont work w the tab spaces
-    handleTab(e: KeyboardEvent, text: HTMLTextAreaElement, output: HTMLDivElement): void  {
-        if(e.key !== 'Tab') return;
-        const firstHalf = text.value.substring(0, text.selectionStart);
-        const secondHalf = text.value.substring(text.selectionEnd);
-        text.value = firstHalf + '    ' + secondHalf;
-        output.textContent = text.value;
-
-        //Handle mouse repositioning
-        text.selectionEnd = firstHalf.length + 4;
-
-        //Update line numbers and stats
-        this.highlight(text, output);
-        this.getStats();
     }
 
     tokenize(text: HTMLTextAreaElement): string[] {
@@ -218,6 +216,15 @@ export default class Editor {
         this.caretPosition = position;
     }
 
+    //TODO: Add custom undo with a stack or smth cuz it dont work w the tab spaces
+    handleTab(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
+        for(let i = 0; i < this.tabSpaces; i++){
+            gapBuffer.insert(' ', cursorPos + i);
+        }
+        gapBuffer.setCursorPos(cursorPos + this.tabSpaces);
+        this.setCaretPosition(caretPos + this.tabSpaces);
+    }
+
     //TODO: Calculate caret pos for enter
     handleEnter(cursorPos: number, gapBuffer: GapBuffer): void {
         gapBuffer.insert('\n', cursorPos);
@@ -261,8 +268,18 @@ export default class Editor {
 
     handleInput(cursorPos: number, gapBuffer: GapBuffer, e: KeyboardEvent, caretPos: number): void {
         gapBuffer.insert(e.key, cursorPos);
+
+        //Insert the closing character if there is one
+        this.handleClosingChars(cursorPos, gapBuffer, e);
+
         gapBuffer.setCursorPos(cursorPos + 1);
         this.setCaretPosition(caretPos + 1);
+    }
+
+    handleClosingChars(cursorPos: number, gapBuffer: GapBuffer, e: KeyboardEvent): void {
+        if(!this.charPairs.has(e.key)) return;
+        const closingChar = this.charPairs.get(e.key);
+        gapBuffer.insert(closingChar, cursorPos + 1);
     }
 
     updateEditorText(gapBuffer: GapBuffer, output: HTMLDivElement): void {
