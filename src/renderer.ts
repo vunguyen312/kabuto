@@ -83,6 +83,7 @@ class Renderer {
                 //this.handleRightArrow(cursorPos);
                 break;
             default:
+                if(e.key.length !== 1) return;
                 this.editor.handleInput(cursorPos, this.gapBuffer, e, caretPos);
                 break;
         }

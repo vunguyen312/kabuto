@@ -105,7 +105,18 @@ export default class GapBuffer {
         this.gapLeft--;
         //Gotta set the cursor pos in here because users can press backspace at the start.
         this.cursorPos--;
+        this.size--;
         this.buffer[this.gapLeft] = '_';
+
+        this.shortenGap(this.gapRight);
+    }
+
+    shortenGap(position: number): void {
+        for(let i = position; i < this.buffer.length; i++){
+            this.buffer[i] = this.buffer[i + 1];
+        }
+        this.gapRight--;
+        this.buffer.length--;
     }
 
     setCursorPos(cursorPos: number): void {

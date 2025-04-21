@@ -1,4 +1,3 @@
-import { ContextBridge } from "electron";
 import FileData from "./fileData";
 
 export default interface ElectronAPI {
