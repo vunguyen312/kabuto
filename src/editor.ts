@@ -15,7 +15,7 @@ export default class Editor {
     private tabSpaces: number;
     public filePath: string;
 
-    constructor(text: HTMLTextAreaElement, lineNumbers: HTMLTextAreaElement, stats: Stats) {
+    constructor(text: HTMLTextAreaElement, lineNumbers: HTMLTextAreaElement, stats: Stats, caretPosition: number) {
         this.text = text;
         this.lineNumbers = lineNumbers;
 
@@ -25,7 +25,7 @@ export default class Editor {
         this.colTracker = stats.col;
         this.charTracker = stats.char;
         this.totalLnTracker = stats.totalLn;
-        this.caretPosition = 0;
+        this.caretPosition = caretPosition;
 
         this.charPairs = new Map([
             ['{', '}'],

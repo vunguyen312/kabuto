@@ -7,17 +7,17 @@ export default class GapBuffer {
     private cursorPos: number;
 
     constructor(text: string){
-        this.buffer = this.initialize(text);
-        this.gapSize = 10;
+        this.gapSize = 20;
         this.size = text.length + this.gapSize;
+        this.buffer = this.initialize(text);
         this.gapLeft = text.length;
-        this.gapRight = this.size - this.gapLeft - 1;
-        this.cursorPos = 0;
+        this.gapRight = this.size - 1;
+        this.cursorPos = text.length;
     }
 
     initialize(text: string): Array<string> {
-        const newBuffer: Array<string> = new Array(this.size);
-
+        const newBuffer: Array<string> = new Array(text.length);
+        
         for(let i = 0; i < text.length; i++){
             newBuffer[i] = text[i];
         }
@@ -129,6 +129,14 @@ export default class GapBuffer {
 
     getBuffer(): Array<string> {
         return this.buffer;
+    }
+
+    getGapLeft(): number {
+        return this.gapLeft;
+    }
+
+    getGapRight(): number {
+        return this.gapRight;
     }
 
     setBuffer(buffer: string[]): void {

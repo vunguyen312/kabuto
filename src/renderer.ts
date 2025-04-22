@@ -27,10 +27,11 @@ class Renderer {
         }
 
         this.gapBuffer = new GapBuffer("");
-        this.editor = new Editor(this.text, this.lineNumbers, this.statTrackers);
+        this.editor = new Editor(this.text, this.lineNumbers, this.statTrackers, this.gapBuffer.getGapLeft());
     }
 
-    initializeEditor(): void{
+    initializeEditor(): void {
+        this.editor.updateEditorText(this.gapBuffer, this.output);
         this.editor.setLineNumbers();
         this.setEventListeners();
 
