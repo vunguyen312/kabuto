@@ -229,19 +229,42 @@ export default class Editor {
     handleEnter(cursorPos: number, gapBuffer: GapBuffer): void {
         gapBuffer.insert('\n', cursorPos);
         gapBuffer.setCursorPos(cursorPos + 1);
+        this.setCaretPosition(this.caretPosition + 1);
         this.addSingleLineNumber();
     }
 
     handleBackspace(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
         //If the next backspace deletes a line then remove a line number
         const buffer = gapBuffer.getBuffer();
-        if(buffer[cursorPos - 1] !== '\n'){
+        if(buffer[cursorPos - 1] === '\n'){
             this.removeSingleLineNumber();
         }
 
         gapBuffer.delete(cursorPos);
         if(caretPos - 1 < 0) return;
         this.setCaretPosition(caretPos - 1);
+    }
+
+    handleUpArrow(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
+        let breaksFound = 0;
+        let lineIndex = 0;
+        let currPos = cursorPos;
+        const buffer = gapBuffer.getBuffer();
+        //Counts the left side of the cursor. Adding the lineIndex to the index of the next linebreak
+        //will result in the location of where the cursor should appear.
+        while(breaksFound < 0){
+            if(breaksFound < 1){
+                lineIndex++;
+            }
+
+            currPos--;
+            if(buffer[currPos] !== '\n') continue;
+            breaksFound++;
+        }
+
+        //continue later
+
+
     }
 
     handleRightArrow(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
