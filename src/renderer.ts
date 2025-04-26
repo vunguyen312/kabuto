@@ -77,7 +77,7 @@ class Renderer {
                 this.editor.handleRightArrow(cursorPos, this.gapBuffer, caretPos);
                 break;
             case "ArrowUp":
-                //this.handleRightArrow(cursorPos);
+                this.editor.handleUpArrow(cursorPos, this.gapBuffer);
                 break;
             case "ArrowLeft":
                 this.editor.handleLeftArrow(cursorPos, this.gapBuffer, caretPos);

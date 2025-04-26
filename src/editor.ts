@@ -245,26 +245,37 @@ export default class Editor {
         this.setCaretPosition(caretPos - 1);
     }
 
-    handleUpArrow(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
+    handleUpArrow(cursorPos: number, gapBuffer: GapBuffer): void {
         let breaksFound = 0;
         let lineIndex = 0;
+        let rightMostPos = 0; //Tracks the right-most position the cursor can move if the previous line is too short
         let currPos = cursorPos;
         const buffer = gapBuffer.getBuffer();
         //Counts the left side of the cursor. Adding the lineIndex to the index of the next linebreak
         //will result in the location of where the cursor should appear.
-        while(breaksFound < 0){
-            if(breaksFound < 1){
-                lineIndex++;
-            }
-
+        while(breaksFound < 2){
+            if(breaksFound < 1) lineIndex++;
+            if(breaksFound === 1) rightMostPos++;
+            
             currPos--;
+
+            //Prevents attempts to go up on the first line
+            if(currPos <= 0 && breaksFound === 0) return;
+
+            if(currPos <= 0){
+                currPos--;
+                break;
+            }
             if(buffer[currPos] !== '\n') continue;
             breaksFound++;
         }
 
-        //continue later
-
-
+        let newPos = currPos + lineIndex;
+        if(rightMostPos < lineIndex) newPos = currPos + rightMostPos;
+        
+        gapBuffer.setCursorPos(newPos);
+        gapBuffer.moveCursor(newPos);
+        this.setCaretPosition(newPos);
     }
 
     handleRightArrow(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
