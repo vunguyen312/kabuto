@@ -225,7 +225,6 @@ export default class Editor {
         this.setCaretPosition(caretPos + this.tabSpaces);
     }
 
-    //TODO: Calculate caret pos for enter
     handleEnter(cursorPos: number, gapBuffer: GapBuffer): void {
         gapBuffer.insert('\n', cursorPos);
         gapBuffer.setCursorPos(cursorPos + 1);
@@ -254,8 +253,9 @@ export default class Editor {
         //Counts the left side of the cursor. Adding the lineIndex to the index of the next linebreak
         //will result in the location of where the cursor should appear.
         while(breaksFound < 2){
-            if(breaksFound < 1) lineIndex++;
-            if(breaksFound === 1) rightMostPos++;
+            breaksFound < 1 
+            ? lineIndex++
+            : rightMostPos++;
             
             currPos--;
 
@@ -270,24 +270,60 @@ export default class Editor {
             breaksFound++;
         }
 
-        let newPos = currPos + lineIndex;
-        if(rightMostPos < lineIndex) newPos = currPos + rightMostPos;
+        let newPos = rightMostPos < lineIndex 
+        ? currPos + rightMostPos 
+        : currPos + lineIndex;
         
-        gapBuffer.setCursorPos(newPos);
-        gapBuffer.moveCursor(newPos);
-        this.setCaretPosition(newPos);
+        this.setCursorAndCaret(gapBuffer, newPos, newPos);
     }
+
+    //You couldn't pay AI to optimize this LOL
+    handleDownArrow(cursorPos: number, gapBuffer: GapBuffer): void {
+        let lineIndex = 0;
+        let rightMostPos = 0;
+        let breaksFound = 0;
+        let currPos = cursorPos;
+        let rightIndex = gapBuffer.getGapRight();
+        let leftIndex = gapBuffer.getGapLeft();
+        const buffer = gapBuffer.getBuffer();
+
+        while(buffer[currPos] !== '\n'){
+            lineIndex++;
+            currPos--;
+
+            if(currPos >= 0) continue;
+            break;
+        }
+
+        while(breaksFound < 2){
+            if(breaksFound >= 1){
+                rightMostPos++;
+                if(rightMostPos + rightIndex > buffer.length) breaksFound++;
+                //If we count the index of the next break the jump will go further by one
+                if(buffer[rightMostPos + rightIndex + 1] === '\n') breaksFound++;
+                continue;
+            }
+            rightIndex++;
+            leftIndex++;
+            if(rightIndex > buffer.length) return;
+            if(buffer[rightIndex] === '\n') breaksFound++;
+        }
+
+        let newPos = rightMostPos < lineIndex
+        ? leftIndex + rightMostPos
+        : leftIndex + lineIndex - 1;
+
+        this.setCursorAndCaret(gapBuffer, newPos, newPos);
+    }
+
+    //TODO: Down Arrow & Maybe make controller class to shorten this script size
 
     handleRightArrow(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
         const bufferLength = gapBuffer.getBuffer().length;
         const currGapSize = gapBuffer.getCurrGap();
         const newPos = cursorPos + 1;
         if(newPos > bufferLength - currGapSize) return;
-        gapBuffer.setCursorPos(newPos);
-        gapBuffer.moveCursor(newPos);
-
-        if(caretPos + 1 > this.getCharCount()) return;
-        this.setCaretPosition(caretPos + 1);
+        this.setCursorAndCaret(gapBuffer, newPos, caretPos + 1);
     }
 
     handleLeftArrow(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
@@ -314,6 +350,12 @@ export default class Editor {
         if(!this.charPairs.has(e.key)) return;
         const closingChar = this.charPairs.get(e.key);
         gapBuffer.insert(closingChar, cursorPos + 1);
+    }
+
+    setCursorAndCaret(gapBuffer: GapBuffer, cursorPos: number, caretPos: number){
+        gapBuffer.setCursorPos(cursorPos);
+        gapBuffer.moveCursor(cursorPos);
+        this.setCaretPosition(caretPos);
     }
 
     updateEditorText(gapBuffer: GapBuffer, output: HTMLDivElement): void {
