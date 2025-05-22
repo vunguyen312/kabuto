@@ -1,6 +1,7 @@
 import './index.css';
 import Editor from './Editor';
 import GapBuffer from './collections/GapBuffer';
+import Controller from './Controller';
 import FileData from './types/fileData';
 import Stats from "./types/stats";
 
@@ -12,6 +13,7 @@ class Renderer {
     private statTrackers: Stats;
     private gapBuffer: GapBuffer;
     private editor: Editor;
+    private controller: Controller;
 
     constructor(){
         this.title = document.querySelector('title') as HTMLTitleElement;
@@ -28,6 +30,7 @@ class Renderer {
 
         this.gapBuffer = new GapBuffer("");
         this.editor = new Editor(this.text, this.lineNumbers, this.statTrackers, this.gapBuffer.getGapLeft());
+        this.controller = new Controller(this.editor, this.gapBuffer);
     }
 
     initializeEditor(): void {
@@ -42,7 +45,7 @@ class Renderer {
 
     setEventListeners(): void {
         //this.text.addEventListener('input', () => this.listenForInput());
-        this.text.addEventListener('keydown', (e: KeyboardEvent) => this.listenForKeystrokes(e));
+        this.text.addEventListener('keydown', (e: KeyboardEvent) => this.controller.listenForKeystrokes(e, this.text, this.output));
         this.text.addEventListener('click', () => this.editor.getStats());
         this.text.addEventListener('scroll', () => this.editor.syncScroll(this.output));
     }
@@ -51,49 +54,6 @@ class Renderer {
     //    this.editor.handleLineNumber(this.text);
     //    this.editor.getStats();
     //}
-
-    listenForKeystrokes(e: KeyboardEvent): void {
-        //this.editor.handleLineNumber(this.text);
-        //this.editor.getStats();
-        e.preventDefault();
-        this.editor.handleUndo(e, this.text);
-        //Cursor pos refers to GapBuffer's gap
-        const cursorPos = this.gapBuffer.getCursorPos();
-        //Caret pos refers to visual cursor on the editor
-        const caretPos = this.editor.getCaretPosition();
-
-        //Might move all this key stuff to the editor class later
-        switch(e.key){
-            case "Enter":
-                this.editor.handleEnter(cursorPos, this.gapBuffer);
-                break;
-            case "Backspace":
-                this.editor.handleBackspace(cursorPos, this.gapBuffer, caretPos);
-                break;
-            case "Tab":
-                this.editor.handleTab(cursorPos, this.gapBuffer, caretPos);
-                break;
-            case "ArrowRight":
-                this.editor.handleRightArrow(cursorPos, this.gapBuffer, caretPos);
-                break;
-            case "ArrowUp":
-                this.editor.handleUpArrow(cursorPos, this.gapBuffer);
-                break;
-            case "ArrowLeft":
-                this.editor.handleLeftArrow(cursorPos, this.gapBuffer, caretPos);
-                break;
-            case "ArrowDown":
-                this.editor.handleDownArrow(cursorPos, this.gapBuffer);
-                break;
-            default:
-                if(e.key.length !== 1) return;
-                this.editor.handleInput(cursorPos, this.gapBuffer, e, caretPos);
-                break;
-        }
-
-        this.editor.updateEditorText(this.gapBuffer, this.output);
-        this.editor.getStats();
-    }
 
     //TODO: Add compability with the GapBuffer
     loadFileContent(e: Event, fileData: FileData): void {
@@ -110,4 +70,3 @@ class Renderer {
 const renderer = new Renderer();
 
 renderer.initializeEditor();
-

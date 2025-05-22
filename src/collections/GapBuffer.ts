@@ -147,6 +147,10 @@ export default class GapBuffer {
         this.buffer = buffer;
     }
 
+    setBufferLength(length: number): void {
+        this.buffer.length = length;
+    }
+
     getCurrGap(): number {
         return this.gapRight - this.gapLeft + 1;
     }

@@ -11,8 +11,6 @@ export default class Editor {
     private charTracker: HTMLSpanElement;
     private totalLnTracker: HTMLSpanElement;
     private caretPosition: number;
-    private charPairs: Map<string, string>;
-    private tabSpaces: number;
     public filePath: string;
 
     constructor(text: HTMLTextAreaElement, lineNumbers: HTMLTextAreaElement, stats: Stats, caretPosition: number) {
@@ -26,18 +24,6 @@ export default class Editor {
         this.charTracker = stats.char;
         this.totalLnTracker = stats.totalLn;
         this.caretPosition = caretPosition;
-
-        this.charPairs = new Map([
-            ['{', '}'],
-            ['[', ']'],
-            ["'", "'"],
-            ['"', '"'],
-            ['(', ')'],
-            ['`', '`']
-        ]);
-
-        //Settings
-        this.tabSpaces = 4;
     }
     
     setLineNumbers(): void {
@@ -214,142 +200,6 @@ export default class Editor {
 
     setCaretPosition(position: number): void {
         this.caretPosition = position;
-    }
-
-    //TODO: Add custom undo with a stack or smth cuz it dont work w the tab spaces
-    handleTab(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
-        for(let i = 0; i < this.tabSpaces; i++){
-            gapBuffer.insert(' ', cursorPos + i);
-        }
-        gapBuffer.setCursorPos(cursorPos + this.tabSpaces);
-        this.setCaretPosition(caretPos + this.tabSpaces);
-    }
-
-    handleEnter(cursorPos: number, gapBuffer: GapBuffer): void {
-        gapBuffer.insert('\n', cursorPos);
-        gapBuffer.setCursorPos(cursorPos + 1);
-        this.setCaretPosition(this.caretPosition + 1);
-        this.addSingleLineNumber();
-    }
-
-    handleBackspace(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
-        //If the next backspace deletes a line then remove a line number
-        const buffer = gapBuffer.getBuffer();
-        if(buffer[cursorPos - 1] === '\n'){
-            this.removeSingleLineNumber();
-        }
-
-        gapBuffer.delete(cursorPos);
-        if(caretPos - 1 < 0) return;
-        this.setCaretPosition(caretPos - 1);
-    }
-
-    handleUpArrow(cursorPos: number, gapBuffer: GapBuffer): void {
-        let breaksFound = 0;
-        let lineIndex = 0;
-        let rightMostPos = 0; //Tracks the right-most position the cursor can move if the previous line is too short
-        let currPos = cursorPos;
-        const buffer = gapBuffer.getBuffer();
-        //Counts the left side of the cursor. Adding the lineIndex to the index of the next linebreak
-        //will result in the location of where the cursor should appear.
-        while(breaksFound < 2){
-            breaksFound < 1 
-            ? lineIndex++
-            : rightMostPos++;
-            
-            currPos--;
-
-            //Prevents attempts to go up on the first line
-            if(currPos <= 0 && breaksFound === 0) return;
-
-            if(currPos <= 0){
-                currPos--;
-                break;
-            }
-            if(buffer[currPos] !== '\n') continue;
-            breaksFound++;
-        }
-
-        let newPos = rightMostPos < lineIndex 
-        ? currPos + rightMostPos 
-        : currPos + lineIndex;
-        
-        this.setCursorAndCaret(gapBuffer, newPos, newPos);
-    }
-
-    //You couldn't pay AI to optimize this LOL
-    handleDownArrow(cursorPos: number, gapBuffer: GapBuffer): void {
-        let lineIndex = 0;
-        let rightMostPos = 0;
-        let breaksFound = 0;
-        let currPos = cursorPos;
-        let rightIndex = gapBuffer.getGapRight();
-        let leftIndex = gapBuffer.getGapLeft();
-        const buffer = gapBuffer.getBuffer();
-
-        while(buffer[currPos] !== '\n'){
-            lineIndex++;
-            currPos--;
-
-            if(currPos >= 0) continue;
-            break;
-        }
-
-        while(breaksFound < 2){
-            if(breaksFound >= 1){
-                rightMostPos++;
-                if(rightMostPos + rightIndex > buffer.length) breaksFound++;
-                //If we count the index of the next break the jump will go further by one
-                if(buffer[rightMostPos + rightIndex + 1] === '\n') breaksFound++;
-                continue;
-            }
-            rightIndex++;
-            leftIndex++;
-            if(rightIndex > buffer.length) return;
-            if(buffer[rightIndex] === '\n') breaksFound++;
-        }
-
-        let newPos = rightMostPos < lineIndex
-        ? leftIndex + rightMostPos
-        : leftIndex + lineIndex - 1;
-
-        this.setCursorAndCaret(gapBuffer, newPos, newPos);
-    }
-
-    //TODO: Down Arrow & Maybe make controller class to shorten this script size
-
-    handleRightArrow(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
-        const bufferLength = gapBuffer.getBuffer().length;
-        const currGapSize = gapBuffer.getCurrGap();
-        const newPos = cursorPos + 1;
-        if(newPos > bufferLength - currGapSize) return;
-        this.setCursorAndCaret(gapBuffer, newPos, caretPos + 1);
-    }
-
-    handleLeftArrow(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
-        const newPos = cursorPos - 1;
-        if(newPos < 0) return;
-        gapBuffer.setCursorPos(newPos);
-        gapBuffer.moveCursor(newPos);
-
-        if(caretPos - 1 < 0) return;
-        this.setCaretPosition(caretPos - 1);
-    }
-
-    handleInput(cursorPos: number, gapBuffer: GapBuffer, e: KeyboardEvent, caretPos: number): void {
-        gapBuffer.insert(e.key, cursorPos);
-
-        //Insert the closing character if there is one
-        this.handleClosingChars(cursorPos, gapBuffer, e);
-
-        gapBuffer.setCursorPos(cursorPos + 1);
-        this.setCaretPosition(caretPos + 1);
-    }
-
-    handleClosingChars(cursorPos: number, gapBuffer: GapBuffer, e: KeyboardEvent): void {
-        if(!this.charPairs.has(e.key)) return;
-        const closingChar = this.charPairs.get(e.key);
-        gapBuffer.insert(closingChar, cursorPos + 1);
     }
 
     setCursorAndCaret(gapBuffer: GapBuffer, cursorPos: number, caretPos: number){
