@@ -46,7 +46,7 @@ class Renderer {
     setEventListeners(): void {
         //this.text.addEventListener('input', () => this.listenForInput());
         this.text.addEventListener('keydown', (e: KeyboardEvent) => this.controller.listenForKeystrokes(e, this.text, this.output));
-        this.text.addEventListener('click', () => this.editor.getStats());
+        this.text.addEventListener('click', (e: MouseEvent) => this.controller.handleClick(e, this.gapBuffer, this.text.selectionStart, this.output));
         this.text.addEventListener('scroll', () => this.editor.syncScroll(this.output));
     }
 

@@ -4,15 +4,17 @@ import Editor from "./Editor";
 export default class Controller {
     private editor: Editor;
     private gapBuffer: GapBuffer;
-    private charPairs: Map<string, string>;
     private tabSpaces: number;
     //Tracks the cursor's 'true' index in a single line
     //Basically, it controls the behaviour text editors have when using up and down arrow keys to navigate
     private trueIndex: number;
 
+    private readonly charPairs: Map<string, string>;
+
     constructor(editor: Editor, gapBuffer: GapBuffer) {
         this.editor = editor;
         this.gapBuffer = gapBuffer;
+        this.trueIndex = 0;
         this.charPairs = new Map([
             ['{', '}'],
             ['[', ']'],
@@ -21,7 +23,6 @@ export default class Controller {
             ['(', ')'],
             ['`', '`']
         ]);
-        this.trueIndex = 0;
 
         //Settings
         this.tabSpaces = 4;
@@ -191,6 +192,21 @@ export default class Controller {
         }
 
         this.trueIndex = trueIndex;
+    }
+
+    handleClick(e: MouseEvent, gapBuffer: GapBuffer, newCursorPos: number, output: HTMLDivElement): void {
+        e.preventDefault();
+        const cursorPos = gapBuffer.getCursorPos(); 
+
+        this.relocateCursorOnClick(cursorPos, gapBuffer, newCursorPos);
+
+        this.editor.updateEditorText(this.gapBuffer, output);
+        this.editor.getStats();
+    }
+
+    relocateCursorOnClick(cursorPos: number, gapBuffer: GapBuffer, newCursorPos: number): void {
+        if(newCursorPos === cursorPos) return;
+        this.editor.setCursorAndCaret(gapBuffer, newCursorPos, newCursorPos);
     }
 
     handleInput(cursorPos: number, gapBuffer: GapBuffer, e: KeyboardEvent, caretPos: number): void {
