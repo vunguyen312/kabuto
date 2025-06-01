@@ -6,6 +6,9 @@ export default class Controller {
     private gapBuffer: GapBuffer;
     private charPairs: Map<string, string>;
     private tabSpaces: number;
+    //Tracks the cursor's 'true' index in a single line
+    //Basically, it controls the behaviour text editors have when using up and down arrow keys to navigate
+    private trueIndex: number;
 
     constructor(editor: Editor, gapBuffer: GapBuffer) {
         this.editor = editor;
@@ -18,6 +21,7 @@ export default class Controller {
             ['(', ')'],
             ['`', '`']
         ]);
+        this.trueIndex = 0;
 
         //Settings
         this.tabSpaces = 4;
@@ -54,7 +58,7 @@ export default class Controller {
                 this.handleLeftArrow(cursorPos, this.gapBuffer, caretPos);
                 break;
             case "ArrowDown":
-                this.handleDownArrow(cursorPos, this.gapBuffer);
+                this.handleDownArrow(this.gapBuffer);
                 break;
             default:
                 if(e.key.length !== 1) return;
@@ -90,60 +94,47 @@ export default class Controller {
         }
 
         gapBuffer.delete(cursorPos);
+        this.trueIndex--;
         if(caretPos - 1 < 0) return;
         this.editor.setCaretPosition(caretPos - 1);
     }
 
     handleUpArrow(cursorPos: number, gapBuffer: GapBuffer): void {
         let breaksFound = 0;
-        let lineIndex = 0;
         let rightMostPos = 0; //Tracks the right-most position the cursor can move if the previous line is too short
         let currPos = cursorPos;
         const buffer = gapBuffer.getBuffer();
         //Counts the left side of the cursor. Adding the lineIndex to the index of the next linebreak
         //will result in the location of where the cursor should appear.
         while(breaksFound < 2){
-            breaksFound < 1 
-            ? lineIndex++
-            : rightMostPos++;
+            if(breaksFound >= 1){
+                rightMostPos++;
+            }
             
             currPos--;
 
             //Prevents attempts to go up on the first line
             if(currPos <= 0 && breaksFound === 0) return;
-
-            if(currPos <= 0){
-                currPos--;
-                break;
-            }
+            if(currPos < 0) break;
+            
             if(buffer[currPos] !== '\n') continue;
             breaksFound++;
         }
 
-        let newPos = rightMostPos < lineIndex 
+        let newPos = rightMostPos < this.trueIndex + 1
         ? currPos + rightMostPos 
-        : currPos + lineIndex;
+        : currPos + this.trueIndex + 1;
         
         this.editor.setCursorAndCaret(gapBuffer, newPos, newPos);
     }
 
     //You couldn't pay AI to optimize this LOL
-    handleDownArrow(cursorPos: number, gapBuffer: GapBuffer): void {
-        let lineIndex = 0;
+    handleDownArrow(gapBuffer: GapBuffer): void {
         let rightMostPos = 0;
         let breaksFound = 0;
-        let currPos = cursorPos;
         let rightIndex = gapBuffer.getGapRight();
         let leftIndex = gapBuffer.getGapLeft();
         const buffer = gapBuffer.getBuffer();
-
-        while(buffer[currPos] !== '\n'){
-            lineIndex++;
-            currPos--;
-
-            if(currPos >= 0) continue;
-            break;
-        }
 
         while(breaksFound < 2){
             if(breaksFound >= 1){
@@ -159,31 +150,47 @@ export default class Controller {
             if(buffer[rightIndex] === '\n') breaksFound++;
         }
 
-        let newPos = rightMostPos < lineIndex
+        let newPos = rightMostPos < this.trueIndex
         ? leftIndex + rightMostPos
-        : leftIndex + lineIndex - 1;
+        : leftIndex + this.trueIndex;
 
         this.editor.setCursorAndCaret(gapBuffer, newPos, newPos);
     }
 
-    //TODO: Down Arrow & Maybe make controller class to shorten this script size
-
     handleRightArrow(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
-        const bufferLength = gapBuffer.getBuffer().length;
+        const buffer = gapBuffer.getBuffer();
+        const bufferLength = buffer.length;
         const currGapSize = gapBuffer.getCurrGap();
         const newPos = cursorPos + 1;
+
         if(newPos > bufferLength - currGapSize) return;
+
         this.editor.setCursorAndCaret(gapBuffer, newPos, caretPos + 1);
+        this.findTrueIndex(newPos, buffer);
     }
 
     handleLeftArrow(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
         const newPos = cursorPos - 1;
         if(newPos < 0) return;
+
         gapBuffer.setCursorPos(newPos);
         gapBuffer.moveCursor(newPos);
+        this.findTrueIndex(newPos, gapBuffer.getBuffer());
 
         if(caretPos - 1 < 0) return;
         this.editor.setCaretPosition(caretPos - 1);
+    }
+
+    findTrueIndex(cursorPos: number, buffer: Array<String>): void {
+        let currPos = cursorPos;
+        let trueIndex = 0;
+        while(buffer[currPos - 1] !== '\n'){
+            if(currPos <= 0) break;
+            trueIndex++;
+            currPos--;
+        }
+
+        this.trueIndex = trueIndex;
     }
 
     handleInput(cursorPos: number, gapBuffer: GapBuffer, e: KeyboardEvent, caretPos: number): void {
@@ -194,6 +201,7 @@ export default class Controller {
 
         gapBuffer.setCursorPos(cursorPos + 1);
         this.editor.setCaretPosition(caretPos + 1);
+        this.trueIndex++;
     }
 
     handleClosingChars(cursorPos: number, gapBuffer: GapBuffer, e: KeyboardEvent): void {
