@@ -8,7 +8,6 @@ export default class Controller {
     //Tracks the cursor's 'true' index in a single line
     //Basically, it controls the behaviour text editors have when using up and down arrow keys to navigate
     private trueIndex: number;
-
     private readonly charPairs: Map<string, string>;
 
     constructor(editor: Editor, gapBuffer: GapBuffer) {
@@ -73,11 +72,10 @@ export default class Controller {
 
     //TODO: Add custom undo with a stack or smth cuz it dont work w the tab spaces
     handleTab(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
-        for(let i = 0; i < this.tabSpaces; i++){
-            gapBuffer.insert(' ', cursorPos + i);
+        for(let space = 0; space < this.tabSpaces; space++){
+            gapBuffer.insert(' ', cursorPos + space);
         }
-        gapBuffer.setCursorPos(cursorPos + this.tabSpaces);
-        this.editor.setCaretPosition(caretPos + this.tabSpaces);
+        this.editor.setCursorAndCaret(gapBuffer, cursorPos + this.tabSpaces, caretPos + this.tabSpaces);
     }
 
     handleEnter(cursorPos: number, gapBuffer: GapBuffer): void {
@@ -85,6 +83,7 @@ export default class Controller {
         gapBuffer.setCursorPos(cursorPos + 1);
         this.editor.setCaretPosition(this.editor.getCaretPosition() + 1);
         this.editor.addSingleLineNumber();
+        this.trueIndex = 0;
     }
 
     handleBackspace(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
@@ -140,9 +139,10 @@ export default class Controller {
         while(breaksFound < 2){
             if(breaksFound >= 1){
                 rightMostPos++;
-                if(rightMostPos + rightIndex >= buffer.length - 1) breaksFound++;
                 //If we count the index of the next break the jump will go further by one
-                if(buffer[rightMostPos + rightIndex + 1] === '\n') breaksFound++;
+                const nextIndex = rightMostPos + rightIndex + 1;
+                const nextLine = nextIndex >= buffer.length || buffer[nextIndex] === '\n';
+                if(nextLine) breaksFound++;
                 continue;
             }
             rightIndex++;
@@ -151,6 +151,7 @@ export default class Controller {
             if(buffer[rightIndex] === '\n') breaksFound++;
         }
 
+        console.log(rightMostPos, leftIndex, this.trueIndex);
         let newPos = rightMostPos < this.trueIndex
         ? leftIndex + rightMostPos
         : leftIndex + this.trueIndex;
@@ -199,6 +200,8 @@ export default class Controller {
         const cursorPos = gapBuffer.getCursorPos(); 
 
         this.relocateCursorOnClick(cursorPos, gapBuffer, newCursorPos);
+        this.findTrueIndex(newCursorPos, gapBuffer.getBuffer());
+        console.log(newCursorPos);
 
         this.editor.updateEditorText(this.gapBuffer, output);
         this.editor.getStats();
