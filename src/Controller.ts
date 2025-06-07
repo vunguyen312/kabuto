@@ -117,8 +117,7 @@ export default class Controller {
             if(currPos <= 0 && breaksFound === 0) return;
             if(currPos < 0) break;
             
-            if(buffer[currPos] !== '\n') continue;
-            breaksFound++;
+            if(buffer[currPos] === '\n') breaksFound++;
         }
 
         let newPos = rightMostPos < this.trueIndex + 1
@@ -138,11 +137,14 @@ export default class Controller {
 
         while(breaksFound < 2){
             if(breaksFound >= 1){
-                rightMostPos++;
                 //If we count the index of the next break the jump will go further by one
                 const nextIndex = rightMostPos + rightIndex + 1;
                 const nextLine = nextIndex >= buffer.length || buffer[nextIndex] === '\n';
-                if(nextLine) breaksFound++;
+                if(nextLine) {
+                    breaksFound++;
+                    break;
+                }
+                rightMostPos++;
                 continue;
             }
             rightIndex++;
@@ -151,7 +153,6 @@ export default class Controller {
             if(buffer[rightIndex] === '\n') breaksFound++;
         }
 
-        console.log(rightMostPos, leftIndex, this.trueIndex);
         let newPos = rightMostPos < this.trueIndex
         ? leftIndex + rightMostPos
         : leftIndex + this.trueIndex;
