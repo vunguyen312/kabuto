@@ -2,9 +2,20 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Simple Text Editor</title>
+    <title>Kabuto Editor</title>
   </head>
   <body>
+    <nav id="titlebar">
+      <img id="logo" src="<%= require('./assets/logo.png') %>" alt="Kabuto Editor Logo" />
+      <ul id="nav-buttons">
+        <li class="nav-button">File</li>
+        <li class="nav-button">Edit</li>
+        <li class="nav-button">Selection</li>
+        <li class="nav-button">View</li>
+        <li class="nav-button">Terminal</li>
+        <li class="nav-button">Help</li>
+      </ul>
+    </nav>
     <div id="editor">
       <textarea id="line-numbers" disabled="true"></textarea>
       <div id="output"></div>

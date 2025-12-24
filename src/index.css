@@ -23,6 +23,39 @@ body {
   --font-family: 'Fira Code', monospace;
 }
 
+#titlebar {
+  height: 35px;
+  background: var(--bg);
+  color: white;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  -webkit-app-region: drag;
+}
+
+#logo {
+  height: 60%;
+  padding: 0.5rem;
+}
+
+#nav-buttons {
+  display: flex;
+  padding: 0;
+}
+
+.nav-button {
+  display: flex;
+  padding: 0.25rem 0.5rem 0.25rem 0.5rem;
+  border-radius: 5px;
+  font-size: var(--text-size);
+  -webkit-app-region: no-drag;
+}
+
+.nav-button:hover {
+  background-color: #2b2b2b;
+  cursor: default;
+}
+
 #editor {
   display: flex;
   width: 100%;
@@ -49,7 +82,7 @@ body {
   height: 100%;
   left: 55px;
   position: absolute;
-  background-color: var(--bg);
+  background-color: var(--bg-secondary);
   color: rgb(127, 193, 255);
   font-family: var(--font-family) !important;
   font-size: var(--text-size);
@@ -75,7 +108,7 @@ body {
 
 #stats {
   position: relative;
-  background-color: var(--bg-accent);
+  background-color: var(--bg);
   font-family: var(--font-family);
   font-size: var(--text-size);
   color: var(--text-colour);

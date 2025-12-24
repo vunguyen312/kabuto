@@ -141,7 +141,6 @@ export default class Controller {
                 const nextIndex = rightMostPos + rightIndex + 1;
                 const nextLine = nextIndex >= buffer.length || buffer[nextIndex] === '\n';
                 if(nextLine) {
-                    breaksFound++;
                     break;
                 }
                 rightMostPos++;
@@ -202,7 +201,6 @@ export default class Controller {
 
         this.relocateCursorOnClick(cursorPos, gapBuffer, newCursorPos);
         this.findTrueIndex(newCursorPos, gapBuffer.getBuffer());
-        console.log(newCursorPos);
 
         this.editor.updateEditorText(this.gapBuffer, output);
         this.editor.getStats();
@@ -230,3 +228,6 @@ export default class Controller {
         gapBuffer.insert(closingChar, cursorPos + 1);
     }
 }
+
+//TODO: Sync to scroll down as the user types downwards
+//TODO: Add select delete and copy paste

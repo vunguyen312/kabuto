@@ -23,7 +23,19 @@ const createWindow = (): void => {
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
+    title: "Kabuto Editor",
+    icon: "build/icons/win/icon.ico",
     backgroundColor: "#ffffff",
+    titleBarStyle: "hidden",
+    ...(process.platform !== 'darwin' 
+      ? { 
+          titleBarOverlay: {
+            color: '#1b1b1b',
+            symbolColor: '#ffffffff',
+            height: 35
+          }
+        } 
+      : {})
     //frame: false - Redesign the window frame later aaaaaaaa
   });
 

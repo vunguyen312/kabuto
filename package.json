@@ -1,9 +1,22 @@
 {
-  "name": "my-app",
-  "productName": "my-app",
+  "name": "kabuto-editor",
+  "productName": "kabuto-editor",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Simple text editor",
   "main": ".webpack/main",
+  "build": {
+    "appId": "io.github.vunguyen312.kabuto",
+    "productName": "MyApp",
+    "mac": {
+      "icon": "build/icon.icns"
+    },
+    "win": {
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "icon": "build"
+    }
+  },
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
@@ -26,9 +39,11 @@
     "@vercel/webpack-asset-relocator-loader": "^1.7.3",
     "css-loader": "^6.11.0",
     "electron": "32.1.2",
+    "electron-icon-builder": "^2.0.1",
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.30.0",
     "fork-ts-checker-webpack-plugin": "^7.3.0",
+    "html-webpack-plugin": "^5.6.5",
     "node-loader": "^2.0.0",
     "style-loader": "^3.3.4",
     "ts-loader": "^9.5.1",

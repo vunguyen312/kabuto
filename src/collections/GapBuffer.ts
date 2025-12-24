@@ -158,7 +158,7 @@ export default class GapBuffer {
     toString(): string {
         return this.buffer
         //For testing
-            //.filter((_, index) => index < this.gapLeft || index > this.gapRight)
+            .filter((_, index) => index < this.gapLeft || index > this.gapRight)
             .join('');
     }
 }

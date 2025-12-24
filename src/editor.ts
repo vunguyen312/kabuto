@@ -165,6 +165,7 @@ export default class Editor {
         return remainingText.split('\n').length;
     }
 
+    //Optimize this using a loop which counts backwards. Current implementation very inefficient
     getCurrCol(): number {
         const selectionStart = this.text.selectionStart;
         const textBeforeCursor = this.text.value.substring(0, selectionStart);
