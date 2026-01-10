@@ -2,7 +2,9 @@ import { app, Menu, MenuItemConstructorOptions } from 'electron';
 import { openFileMenu, createFileMenu, sendFileData, pingSaveData, pingSaveAsData } from './fileHandler';
 
 //This might be totally useless and I might delete this entire thing later LOL
+//holy prediction log
 
+/*
 const isMac = process.platform === 'darwin'
 
 const menuTemplate: any = [
@@ -77,4 +79,4 @@ const menuTemplate: any = [
     },
 ];
 
-export default Menu.buildFromTemplate(menuTemplate);
+export default Menu.buildFromTemplate(menuTemplate);*/

@@ -25,6 +25,10 @@ export default class Editor {
         this.totalLnTracker = stats.totalLn;
         this.caretPosition = caretPosition;
     }
+
+    setEventListeners(output: HTMLDivElement): void {
+        this.text.addEventListener('scroll', () => this.syncScroll(output));
+    }
     
     setLineNumbers(): void {
         this.prevRowCount = this.text.value.split('\n').length;

@@ -2,6 +2,7 @@ import './index.css';
 import Editor from './Editor';
 import GapBuffer from './collections/GapBuffer';
 import Controller from './Controller';
+import NavigationBar from './NavigationBar';
 import FileData from './types/fileData';
 import Stats from "./types/stats";
 
@@ -14,6 +15,7 @@ class Renderer {
     private gapBuffer: GapBuffer;
     private editor: Editor;
     private controller: Controller;
+    private navigationBar: NavigationBar;
 
     constructor(){
         this.title = document.querySelector('title') as HTMLTitleElement;
@@ -31,23 +33,18 @@ class Renderer {
         this.gapBuffer = new GapBuffer("");
         this.editor = new Editor(this.text, this.lineNumbers, this.statTrackers, this.gapBuffer.getGapLeft());
         this.controller = new Controller(this.editor, this.gapBuffer);
+        this.navigationBar = new NavigationBar();
     }
 
     initializeEditor(): void {
         this.editor.updateEditorText(this.gapBuffer, this.output);
         this.editor.setLineNumbers();
-        this.setEventListeners();
+        this.controller.setEventListeners(this.text, this.output);
+        this.editor.setEventListeners(this.output);
 
         window.electron.receiveFileData((e: Event, fileData: FileData) => this.loadFileContent(e, fileData));
         window.electron.pingSaveData(() => window.electron.saveFileData({ path: this.editor.filePath, content: this.text.value }));
         window.electron.pingSaveAsData(() => window.electron.saveFileAsData({ path: this.editor.filePath, content: this.text.value }));
-    }
-
-    setEventListeners(): void {
-        //this.text.addEventListener('input', () => this.listenForInput());
-        this.text.addEventListener('keydown', (e: KeyboardEvent) => this.controller.listenForKeystrokes(e, this.text, this.output));
-        this.text.addEventListener('click', (e: MouseEvent) => this.controller.handleClick(e, this.gapBuffer, this.text.selectionStart, this.output));
-        this.text.addEventListener('scroll', () => this.editor.syncScroll(this.output));
     }
 
     //listenForInput(): void {
@@ -63,7 +60,7 @@ class Renderer {
         this.editor.setLineNumbers();
         this.editor.updateEditorText(this.gapBuffer, this.output);
         this.editor.getStats();
-        this.title.textContent = `Simple Text Editor - ${this.editor.filePath}`;
+        this.title.textContent = `Kabuto Editor - ${this.editor.filePath}`;
     }
 }
 

@@ -27,6 +27,11 @@ export default class Controller {
         this.tabSpaces = 4;
     }
 
+    setEventListeners(text: HTMLTextAreaElement, output: HTMLDivElement): void {
+        text.addEventListener('keydown', (e: KeyboardEvent) => this.listenForKeystrokes(e, text, output));
+        text.addEventListener('click', (e: MouseEvent) => this.handleClick(e, this.gapBuffer, text.selectionStart, output));
+    }
+
     listenForKeystrokes(e: KeyboardEvent, text: HTMLTextAreaElement, output: HTMLDivElement): void {
         //this.editor.handleLineNumber(this.text);
         //this.editor.getStats();
