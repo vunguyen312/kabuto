@@ -1,8 +1,8 @@
-import './index.css';
-import Editor from './Editor';
-import GapBuffer from './collections/GapBuffer';
-import Controller from './Controller';
-import NavigationBar from './NavigationBar';
+import './styles/index.css';
+import Editor from './collections/renderer/Editor';
+import GapBuffer from './collections/renderer/GapBuffer';
+import Controller from './collections/renderer/Controller';
+import Menu from './collections/renderer/Menu';
 import FileData from './types/fileData';
 import Stats from "./types/stats";
 
@@ -15,7 +15,7 @@ class Renderer {
     private gapBuffer: GapBuffer;
     private editor: Editor;
     private controller: Controller;
-    private navigationBar: NavigationBar;
+    private menu: Menu;
 
     constructor(){
         this.title = document.querySelector('title') as HTMLTitleElement;
@@ -33,7 +33,7 @@ class Renderer {
         this.gapBuffer = new GapBuffer("");
         this.editor = new Editor(this.text, this.lineNumbers, this.statTrackers, this.gapBuffer.getGapLeft());
         this.controller = new Controller(this.editor, this.gapBuffer);
-        this.navigationBar = new NavigationBar();
+        this.menu = new Menu();
     }
 
     initializeEditor(): void {

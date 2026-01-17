@@ -1,5 +1,5 @@
-import GapBuffer from "./collections/GapBuffer";
-import Stats from "./types/stats";
+import GapBuffer from "./GapBuffer";
+import Stats from "../../types/stats";
 
 export default class Editor {
     private text: HTMLTextAreaElement;

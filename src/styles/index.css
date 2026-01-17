@@ -1,3 +1,9 @@
+@font-face {
+    font-family: JetBrains_Mono;
+    font-weight: 300;
+    src: url('fonts/JetBrains_Mono/JetBrainsMono-VariableFont_wght.ttf');
+}
+
 title {
   background-color: #ffffff !important;
 }
@@ -18,10 +24,10 @@ body {
   --bg-secondary: #242424;
   --bg-accent: #414141;
   --text-colour: #ffffff;
-  --text-size: 0.9rem;
+  --text-size: 0.8rem;
   --line-height: 1.25rem;
   --border-radius: 5px;
-  --font-family: 'Fira Code', monospace;
+  --font-family: JetBrains_Mono;
 }
 
 #titlebar {
@@ -103,6 +109,7 @@ body {
 #line-numbers {
   background-color: var(--bg-secondary);
   color: var(--text-colour);
+  font-family: var(--font-family);
   font-size: var(--text-size);
   line-height: var(--line-height);
   text-align: right;

@@ -1,6 +1,6 @@
-import MenuItem from './types/menuItem';
+import MenuItem from '../../types/menuItem';
 
-export default class NavigationBar {
+export default class Menu {
     private navButtons: HTMLCollectionOf<Element>;
     private activeMenu: string;
     private sectionDivs: Map<string, HTMLDivElement>;

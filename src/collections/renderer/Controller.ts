@@ -1,4 +1,4 @@
-import GapBuffer from "./collections/GapBuffer";
+import GapBuffer from "./GapBuffer";
 import Editor from "./Editor";
 
 export default class Controller {
