@@ -10,7 +10,7 @@ class Renderer {
     private title: HTMLTitleElement;
     private text: HTMLTextAreaElement;
     private output: HTMLDivElement;
-    private lineNumbers: HTMLTextAreaElement;
+    private lineNumbers: HTMLDivElement;
     private statTrackers: Stats;
     private gapBuffer: GapBuffer;
     private editor: Editor;
@@ -21,7 +21,7 @@ class Renderer {
         this.title = document.querySelector('title') as HTMLTitleElement;
         this.text = document.getElementById('text-input') as HTMLTextAreaElement;
         this.output = document.getElementById('output') as HTMLDivElement;
-        this.lineNumbers = document.getElementById('line-numbers') as HTMLTextAreaElement;
+        this.lineNumbers = document.getElementById('line-numbers') as HTMLDivElement;
 
         this.statTrackers = {
             ln: document.getElementById('ln') as HTMLSpanElement,

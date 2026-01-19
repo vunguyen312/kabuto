@@ -3,7 +3,7 @@ import Stats from "../../types/stats";
 
 export default class Editor {
     private text: HTMLTextAreaElement;
-    private lineNumbers: HTMLTextAreaElement;
+    private lineNumbers: HTMLDivElement;
     private currentRowCount: number;
     private prevRowCount: number;
     private lnTracker: HTMLSpanElement;
@@ -13,7 +13,7 @@ export default class Editor {
     private caretPosition: number;
     public filePath: string;
 
-    constructor(text: HTMLTextAreaElement, lineNumbers: HTMLTextAreaElement, stats: Stats, caretPosition: number) {
+    constructor(text: HTMLTextAreaElement, lineNumbers: HTMLDivElement, stats: Stats, caretPosition: number) {
         this.text = text;
         this.lineNumbers = lineNumbers;
 
@@ -36,34 +36,34 @@ export default class Editor {
         for(let i = 1; i <= this.prevRowCount; i++){
             lineNumbers += `${i}\n`;
         }
-        this.lineNumbers.value = lineNumbers;
+        this.lineNumbers.textContent = lineNumbers;
         console.log(this.currentRowCount, "set");
     }
 
     addSingleLineNumber(): void {
         this.prevRowCount = this.currentRowCount;
         this.currentRowCount++;
-        this.lineNumbers.value += `${this.currentRowCount}`;
-        this.lineNumbers.value += '\n';
+        this.lineNumbers.textContent += `${this.currentRowCount}`;
+        this.lineNumbers.textContent += '\n';
     }
 
     removeSingleLineNumber(): void {
-        if(this.lineNumbers.value.length <= 2) return;
+        if(this.lineNumbers.textContent.length <= 2) return;
 
-        let currIndex = this.lineNumbers.value.length - 1;
-        const lastRow = this.lineNumbers.value[currIndex];
+        let currIndex = this.lineNumbers.textContent.length - 1;
+        const lastRow = this.lineNumbers.textContent[currIndex];
         //Skipping the first instance of a line break so it doesn't tamper with the loop
         if(lastRow === '\n'){
             currIndex--;
         }
 
-        while(this.lineNumbers.value[currIndex] !== '\n'){
+        while(this.lineNumbers.textContent[currIndex] !== '\n'){
             currIndex--;
         }
 
         //We want to leave the last line break alone which is it's included in the substring.
         //This is because the line add follows the pattern of {number}\n
-        this.lineNumbers.value = this.lineNumbers.value.substring(0, currIndex + 1);
+        this.lineNumbers.textContent = this.lineNumbers.textContent.substring(0, currIndex + 1);
         this.prevRowCount = this.currentRowCount;
         this.currentRowCount--;
     }
