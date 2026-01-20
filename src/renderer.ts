@@ -6,7 +6,7 @@ import Menu from './collections/renderer/Menu';
 import FileData from './types/fileData';
 import Stats from "./types/stats";
 
-class Renderer {
+export default class Renderer {
     private title: HTMLTitleElement;
     private text: HTMLTextAreaElement;
     private output: HTMLDivElement;
@@ -33,7 +33,9 @@ class Renderer {
         this.gapBuffer = new GapBuffer("");
         this.editor = new Editor(this.text, this.lineNumbers, this.statTrackers, this.gapBuffer.getGapLeft());
         this.controller = new Controller(this.editor, this.gapBuffer);
-        this.menu = new Menu();
+        this.menu = new Menu(() => this.loadFileContent);
+
+        renderer.initializeEditor();
     }
 
     initializeEditor(): void {
@@ -42,9 +44,15 @@ class Renderer {
         this.controller.setEventListeners(this.text, this.output);
         this.editor.setEventListeners(this.output);
 
-        window.electron.receiveFileData((e: Event, fileData: FileData) => this.loadFileContent(e, fileData));
-        window.electron.pingSaveData(() => window.electron.saveFileData({ path: this.editor.filePath, content: this.text.value }));
-        window.electron.pingSaveAsData(() => window.electron.saveFileAsData({ path: this.editor.filePath, content: this.text.value }));
+        window.electron.receiveFileData(
+            (e: Event, fileData: FileData) => this.loadFileContent(e, fileData)
+        );
+        window.electron.pingSaveData(
+            () => window.electron.saveFileData({ path: this.editor.filePath, content: this.text.value })
+        );
+        window.electron.pingSaveAsData(
+            () => window.electron.saveFileAsData({ path: this.editor.filePath, content: this.text.value })
+        );
     }
 
     //listenForInput(): void {
@@ -65,5 +73,3 @@ class Renderer {
 }
 
 const renderer = new Renderer();
-
-renderer.initializeEditor();

@@ -64,11 +64,15 @@ app.on('activate', () => {
   }
 });
 
+ipcMain.handle('create-new-file', (e) => {
+  return FileHandler.createFileDialog({ path: null, content: '' });
+});
+
 ipcMain.on('save-file-data', (e, fileData: FileData) => {
-  if (!fileData.path || !FileHandler.verifyFile(fileData)) return FileHandler.createFileMenu(fileData);
+  if (!fileData.path || !FileHandler.verifyFile(fileData)) return FileHandler.createFileDialog(fileData);
   FileHandler.saveFileData(fileData);
 });
 
 ipcMain.on('save-file-as-data', (e, fileData: FileData) => {
-  FileHandler.createFileMenu(fileData);
+  FileHandler.createFileDialog(fileData);
 });

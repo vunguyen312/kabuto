@@ -1,10 +1,10 @@
 import MenuItem from '../../types/menuItem';
 
 export default class Menu {
+    private loadFileContent: Function;
     private navButtons: HTMLCollectionOf<Element>;
     private activeMenu: string;
     private sectionDivs: Map<string, HTMLDivElement>;
-    private fileDiv: HTMLDivElement;
     private fileContent: MenuItem[];
     private editContent: MenuItem[];
     private selectionContent: MenuItem[];
@@ -15,12 +15,13 @@ export default class Menu {
 
     //i could lowkey put this all into one giant object and build it from there kinda like the old menu but like
     //thats tomorrows problem
-    constructor() {
+    constructor(loadFileContent: Function) {
+        this.loadFileContent = loadFileContent;
         this.activeMenu = '';
         this.navButtons = document.getElementsByClassName('nav-button');
         this.sectionDivs = this.createSectionDivs();
         this.fileContent = [
-            { display: 'New File...', shortcut: 'Ctrl+N', action: () => {console.log('placeholder')} }, 
+            { display: 'New File...', shortcut: 'Ctrl+N', action: async () => await this.createNewFile() }, 
             { display: 'New Window', shortcut: 'Ctrl+Shift+N', action: () => {console.log('placeholder')} }, 
             { display: 'Open File...', shortcut: 'Ctrl+O', action: () => {console.log('placeholder')} }, 
             { display: 'Save', shortcut: 'Ctrl+S', action: () => {console.log('placeholder')} }, 
@@ -63,12 +64,9 @@ export default class Menu {
     }
 
     initializeNavBar(): void {
-        this.createSectionMenu('file');
-        this.createSectionMenu('edit');
-        this.createSectionMenu('selection');
-        this.createSectionMenu('view');
-        this.createSectionMenu('terminal');
-        this.createSectionMenu('help');
+        for(const [section] of this.sectionToContent) {
+            this.createSectionMenu(section);
+        }
     }
 
     createSectionDivs(): Map<string, HTMLDivElement> {
@@ -93,15 +91,16 @@ export default class Menu {
         const sectionContent = this.sectionToContent.get(sectionID);
 
         for(const menuItem of sectionContent) 
-            this.createMenuItem(menuItem.display, menuItem.shortcut, dropdown);
+            this.createMenuItem(menuItem.display, menuItem.shortcut, menuItem.action, dropdown);
     }
 
-    createMenuItem(display: string, shortcut: string, parent: HTMLDivElement): void {
+    createMenuItem(display: string, shortcut: string, action: Function, parent: HTMLDivElement): void {
         const newMenuItem = document.createElement('a');
         newMenuItem.className = 'dropdown-item';
         newMenuItem.href = '#';
         newMenuItem.textContent = display;
-        
+        newMenuItem.addEventListener('click', () => action());
+
         this.createShortcutDisplay(shortcut, newMenuItem);
         parent.append(newMenuItem);
     }
@@ -128,5 +127,13 @@ export default class Menu {
         }
         section.style.display = 'none';
         this.activeMenu = '';
+    }
+
+    async createNewFile(): Promise<void> {
+        const result = await window.electron.createNewFile();
+        const sectionDiv = this.sectionDivs.get('file');
+        
+        this.toggleVisible(sectionDiv);
+        if (result) this.loadFileContent(null, result);
     }
 }

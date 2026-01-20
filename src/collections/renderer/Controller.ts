@@ -91,10 +91,11 @@ export default class Controller {
 
     //TODO: Add custom undo with a stack or smth cuz it dont work w the tab spaces
     handleTab(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
-        for(let space = 0; space < this.tabSpaces; space++){
-            gapBuffer.insert(' ', cursorPos + space);
-        }
-        this.editor.setCursorAndCaret(gapBuffer, cursorPos + this.tabSpaces, caretPos + this.tabSpaces);
+        const nextCursorPos = cursorPos + 1;
+        const nextCaretPos = caretPos + 1;
+        
+        gapBuffer.insert('\t', cursorPos);
+        this.editor.setCursorAndCaret(gapBuffer, nextCursorPos, nextCaretPos);
     }
 
     handleEnter(cursorPos: number, gapBuffer: GapBuffer): void {

@@ -1,4 +1,4 @@
-import { dialog } from 'electron';
+import { BrowserView, BrowserWindow, dialog, WebContentsView } from 'electron';
 import * as fs from 'fs';
 import FileData from '../../types/fileData';
 
@@ -15,10 +15,10 @@ export default class FileHandler {
         return { path: file, content: content };
     }
 
-    static async createFileMenu(fileData: FileData) {
+    static async createFileDialog(fileData: FileData) {
         const result = await dialog
-        .showSaveDialog({})
-        .catch((err) => console.error(err));
+            .showSaveDialog({})
+            .catch((err) => console.error(err));
 
         if (!result || result.canceled) return null;
 
@@ -37,16 +37,16 @@ export default class FileHandler {
     }
 
     static pingSaveData(window: any): void {
-      window.webContents.send('ping-save-data');
+        window.webContents.send('ping-save-data');
     }
 
     static pingSaveAsData(window: any): void {
-      window.webContents.send('ping-save-as-data');
+        window.webContents.send('ping-save-as-data');
     }
 
     static saveFileData(fileData: FileData): void {
-      console.log("Successfully saved file data");
-      const { path, content } = fileData;
-      fs.writeFileSync(path, content);
+        console.log("Successfully saved file data");
+        const { path, content } = fileData;
+        fs.writeFileSync(path, content);
     }
 }
