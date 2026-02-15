@@ -1,3 +1,7 @@
+<p align="center">
+<img src="build/icons/png/256x256.png" alt="Zector Logo"/>
+</p>
+
 # Zector Editor
 
 
