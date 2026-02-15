@@ -1,30 +1,28 @@
 # Zector Editor
 
-```{=html}
+
 <p align="center">
-```
-`<img src="https://img.shields.io/badge/Electron-Enabled-47848F?logo=electron&logoColor=white" />`{=html}
-`<img src="https://img.shields.io/badge/Node.js-18%2B-green?logo=node.js&logoColor=white" />`{=html}
-`<img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" />`{=html}
-`<img src="https://img.shields.io/badge/License-MIT-yellow" />`{=html}
-```{=html}
+
+<img src="https://img.shields.io/badge/Electron-Enabled-47848F?logo=electron&logoColor=white" />
+<img src="https://img.shields.io/badge/Node.js-18%2B-green?logo=node.js&logoColor=white" />
+<img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" />
+<img src="https://img.shields.io/badge/License-MIT-yellow" />
+
 </p>
-```
-```{=html}
+
 <p align="center">
-```
-`<b>`{=html}A lightweight, fast, and minimal desktop text editor built
-with Electron.js.`</b>`{=html}
-```{=html}
+
+<b> A lightweight, fast, and minimal desktop text editor built
+with Electron.js. </b>
+
 </p>
-```
-```{=html}
+
 <p align="center">
-```
+
 Simple. Clean. Efficient.
-```{=html}
+
 </p>
-```
+
 
 ------------------------------------------------------------------------
 
@@ -36,7 +34,6 @@ Simple. Clean. Efficient.
 -   [Installation](#installation)
 -   [Usage](#usage)
 -   [Screenshots](#screenshots)
--   [Project Structure](#project-structure)
 -   [Configuration](#configuration)
 -   [Dependencies](#dependencies)
 -   [Troubleshooting](#troubleshooting)
@@ -52,7 +49,7 @@ Simple. Clean. Efficient.
 **Electron.js** and **Node.js** for local use.
 
 It provides essential file editing functionality within a clean,
-responsive desktop interface.\
+responsive desktop interface.
 The goal of Zector Editor is simplicity --- delivering core editing
 capabilities without unnecessary complexity.
 
@@ -89,8 +86,10 @@ This project is ideal for:
 
 ### 1. Clone the Repository
 
-git clone `<repository-url>`{=html}\
+```
+git clone <repository-url>
 cd zector-editor
+```
 
 ### 2. Install Dependencies
 
@@ -102,16 +101,20 @@ npm install
 
 Start the application:
 
+``` 
 npm start
+```
 
 If no start script is defined:
 
+```
 npx electron .
+```
 
 Once launched:
 
-1.  Create or open a file\
-2.  Edit content in the editor\
+1.  Create or open a file
+2.  Edit content in the editor
 3.  Save changes locally
 
 ------------------------------------------------------------------------
@@ -124,13 +127,6 @@ Once launched:
 
 ------------------------------------------------------------------------
 
-## Project Structure
-
-zector-editor/ │ ├── main.js ├── preload.js ├── renderer.js ├──
-package.json ├── package-lock.json ├── /screenshots └── README.md
-
-------------------------------------------------------------------------
-
 ## Configuration
 
 Zector Editor is designed for local desktop use and requires minimal
@@ -138,9 +134,9 @@ configuration.
 
 You can customize:
 
--   Application window settings inside `main.js`
--   IPC communication inside `preload.js`
--   UI logic inside `renderer.js`
+-   Application window settings inside `index.ts`
+-   IPC communication inside `preload.ts`
+-   UI logic inside `Renderer.ts`
 -   Start scripts in `package.json`
 
 ------------------------------------------------------------------------
@@ -149,11 +145,13 @@ You can customize:
 
 All dependencies are listed in:
 
-package.json
+`package.json`
 
 Install them using:
 
+```
 npm install
+```
 
 ------------------------------------------------------------------------
 
@@ -161,11 +159,11 @@ npm install
 
 ### Application Does Not Start
 
--   Ensure Node.js is installed: node -v
+-   Ensure Node.js is installed: ```node -v```
 
--   Ensure Electron is installed locally: npm install
+-   Ensure Electron is installed locally: ```npm install```
 
--   Try running directly: npx electron .
+-   Try running directly: ```npx electron .```
 
 ### File Saving Issues
 
