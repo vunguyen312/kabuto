@@ -87,13 +87,15 @@ cd zector-editor
 
 ### 2. Install Dependencies
 
+```
 npm install
+```
 
 ------------------------------------------------------------------------
 
 ## Usage
 
-Start the application:
+Start the application in development mode:
 
 ``` 
 npm start
