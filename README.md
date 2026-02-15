@@ -11,17 +11,11 @@
 </p>
 
 <p align="center">
-
-<b> A lightweight, fast, and minimal desktop text editor built
-with Electron.js. </b>
-
+  <b> A lightweight, fast, and minimal desktop text editor built
+  with Electron.js. </b>
 </p>
 
-<p align="center">
-
-Simple. Clean. Efficient.
-
-</p>
+<p align="center">"My Grandma once said... Walking the path of heaven, the man who will rule everything!"</p>
 
 
 ------------------------------------------------------------------------
@@ -123,7 +117,7 @@ Once launched:
 
 ### File Editing View
 
-![Editing View](demo/editing-view.png)
+![Editing View](demo/demo.png)
 
 ------------------------------------------------------------------------
 
