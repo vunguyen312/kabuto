@@ -6,11 +6,13 @@ export default class Controller {
     private gapBuffer: GapBuffer;
     private tabSpaces: number;
     //Tracks the cursor's 'true' index in a single line
-    //Basically, it controls the behaviour text editors have when using up and down arrow keys to navigate
+    //Basically, it controls the behaviour text editors have when using up and 
+    // down arrow keys to navigate
     private trueIndex: number;
     private readonly charPairs: Map<string, string>;
 
-    constructor(editor: Editor, gapBuffer: GapBuffer) {
+    constructor(editor: Editor, gapBuffer: GapBuffer, 
+                text: HTMLTextAreaElement, output: HTMLDivElement) {
         this.editor = editor;
         this.gapBuffer = gapBuffer;
         this.trueIndex = 0;
@@ -25,14 +27,21 @@ export default class Controller {
 
         //Settings
         this.tabSpaces = 4;
+
+        //Initialize
+        this.setEventListeners(text, output);
     }
 
-    setEventListeners(text: HTMLTextAreaElement, output: HTMLDivElement): void {
-        text.addEventListener('keydown', (e: KeyboardEvent) => this.listenForKeystrokes(e, text, output));
-        text.addEventListener('click', (e: MouseEvent) => this.handleClick(e, this.gapBuffer, text.selectionStart, output));
+    setEventListeners(text: HTMLTextAreaElement, 
+                      output: HTMLDivElement): void {
+        text.addEventListener('keydown', (e: KeyboardEvent) => 
+            this.listenForKeystrokes(e, text, output));
+        text.addEventListener('click', (e: MouseEvent) => 
+            this.handleClick(e, this.gapBuffer, text.selectionStart, output));
     }
 
-    listenForKeystrokes(e: KeyboardEvent, text: HTMLTextAreaElement, output: HTMLDivElement): void {
+    listenForKeystrokes(e: KeyboardEvent, text: HTMLTextAreaElement, 
+                        output: HTMLDivElement): void {
         //this.editor.handleLineNumber(this.text);
         //this.editor.getStats();
         e.preventDefault();
@@ -43,7 +52,7 @@ export default class Controller {
         const caretPos = this.editor.getCaretPosition();
 
         //Might move all this key stuff to the editor class later
-        switch(e.key){
+        switch(e.key) {
             case "Enter":
                 this.handleEnter(cursorPos, this.gapBuffer);
                 break;
@@ -71,7 +80,7 @@ export default class Controller {
                 break;
         }
 
-        this.editor.updateEditorText(this.gapBuffer, output);
+        this.editor.updateEditorText();
         this.editor.getStats();
     }
 
@@ -79,18 +88,21 @@ export default class Controller {
         const gbuffer = gapBuffer.getBuffer();
         const beginningIndex = 0;
         let index = cursorPos;
-        while(gbuffer[index] !== '\n' || index > beginningIndex) {
+        while (gbuffer[index] !== '\n' || index > beginningIndex) {
             const prevIndex = index - 1;
             const trueIndex = cursorPos - index;
 
-            if(gbuffer[prevIndex] === '\n' || index <= beginningIndex) return trueIndex;
+            if (gbuffer[prevIndex] === '\n' || index <= beginningIndex)
+                return trueIndex;
 
             index--;
         }
     }
 
-    //TODO: Add custom undo with a stack or smth cuz it dont work w the tab spaces
-    handleTab(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
+    //TODO: Add custom undo with a stack or smth cuz it dont work w the 
+    // tab spaces
+    handleTab(cursorPos: number, gapBuffer: GapBuffer, 
+              caretPos: number): void {
         const nextCursorPos = cursorPos + 1;
         const nextCaretPos = caretPos + 1;
         
@@ -110,14 +122,15 @@ export default class Controller {
         this.editor.addSingleLineNumber();
     }
 
-    handleBackspace(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
+    handleBackspace(cursorPos: number, gapBuffer: GapBuffer, 
+                    caretPos: number): void {
         const prevIndex = cursorPos - 1;
         const prevCaretIndex = caretPos - 1;
         const beginningIndex = 0;
         const buffer = gapBuffer.getBuffer();
         //If the next backspace deletes a line then remove a line number
-        if(cursorPos <= beginningIndex) return;
-        if(buffer[prevIndex] === '\n'){
+        if (cursorPos <= beginningIndex) return;
+        if (buffer[prevIndex] === '\n') {
             this.editor.removeSingleLineNumber();
             
             gapBuffer.delete(cursorPos);
@@ -137,29 +150,33 @@ export default class Controller {
         const breaksSkipped = 1;
         const beginningIndex = 0;
         let breaksFound = 0;
-        let rightMostPos = 0; //Tracks the right-most position the cursor can move if the previous line is too short
+        //Tracks the right-most position the cursor can 
+        // move if the previous line is too short
+        let rightMostPos = 0;
         let currPos = cursorPos;
         console.log(currPos);
-        //Counts the left side of the cursor. Adding the lineIndex to the index of the next linebreak
-        //will result in the location of where the cursor should appear.
-        while(breaksFound < requiredBreaks){
-            if(breaksFound >= breaksSkipped){
+        //Counts the left side of the cursor. Adding the lineIndex to the index
+        //  of the next linebreak will result in the location of where the 
+        //  cursor should appear.
+        while (breaksFound < requiredBreaks) {
+            if (breaksFound >= breaksSkipped)
                 rightMostPos++;
-            }
             
             currPos--;
 
             //Prevents attempts to go up on the first line
-            if(currPos < beginningIndex && breaksFound === beginningIndex) return;
-            if(currPos < beginningIndex) break;
+            if (currPos < beginningIndex && breaksFound === beginningIndex) 
+                return;
+            if (currPos < beginningIndex) break;
             
-            if(buffer[currPos] === '\n') breaksFound++;
+            if (buffer[currPos] === '\n') breaksFound++;
         }
 
         const prevRightMostPos = currPos + rightMostPos;
         const trueIndexPos = currPos + this.trueIndex + 1;
         const newPos = Math.min(prevRightMostPos, trueIndexPos);
-        //yo lowkey if cursorPos and caretPos r the same why do i have them as diff variables LOL
+        //yo lowkey if cursorPos and caretPos r the same why do i have them as
+        // diff variables LOL
         this.editor.setCursorAndCaret(gapBuffer, newPos, newPos);
     }
 
@@ -173,23 +190,24 @@ export default class Controller {
         let rightIndex = gapBuffer.getGapRight();
         let leftIndex = gapBuffer.getGapLeft();
 
-        while(breaksFound < requiredBreaks){
-            if(breaksFound >= breaksSkipped){
-                //If we count the index of the next break the jump will go further by one
+        while (breaksFound < requiredBreaks) {
+            if (breaksFound >= breaksSkipped) {
+                //If we count the index of the next break the jump will go 
+                // further by one
                 const nextIndex = rightMostPos + rightIndex + 1;
-                const nextLine = nextIndex >= buffer.length || buffer[nextIndex] === '\n';
+                const nextLine = nextIndex >= buffer.length 
+                                 || buffer[nextIndex] === '\n';
 
-                if(nextLine) {
+                if (nextLine)
                     break;
-                }
                 rightMostPos++;
                 continue;
             }
             rightIndex++;
             leftIndex++;
 
-            if(rightIndex > buffer.length) return;
-            if(buffer[rightIndex] === '\n') breaksFound++;
+            if (rightIndex > buffer.length) return;
+            if (buffer[rightIndex] === '\n') breaksFound++;
         }
 
         const nextRightMostPos = leftIndex + rightMostPos;
@@ -199,38 +217,40 @@ export default class Controller {
         this.editor.setCursorAndCaret(gapBuffer, newPos, newPos);
     }
 
-    handleRightArrow(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
+    handleRightArrow(cursorPos: number, gapBuffer: GapBuffer, 
+                     caretPos: number): void {
         const buffer = gapBuffer.getBuffer();
         const bufferLength = buffer.length;
         const currGapSize = gapBuffer.getCurrGap();
         const nextCursorPos = cursorPos + 1;
         const nextCaretPos = caretPos + 1;
 
-        if(nextCursorPos > bufferLength - currGapSize) return;
+        if (nextCursorPos > bufferLength - currGapSize) return;
 
         this.editor.setCursorAndCaret(gapBuffer, nextCursorPos, nextCaretPos);
         this.findTrueIndex(nextCursorPos, buffer);
     }
 
-    handleLeftArrow(cursorPos: number, gapBuffer: GapBuffer, caretPos: number): void {
+    handleLeftArrow(cursorPos: number, gapBuffer: GapBuffer, 
+                    caretPos: number): void {
         const prevCursorPos = cursorPos - 1;
         const prevCaretPos = caretPos - 1;
         const beginningIndex = 0;
-        if(prevCursorPos < beginningIndex) return;
+        if (prevCursorPos < beginningIndex) return;
 
         gapBuffer.setCursorPos(prevCursorPos);
         gapBuffer.moveCursor(prevCursorPos);
         this.findTrueIndex(prevCursorPos, gapBuffer.getBuffer());
 
-        if(prevCaretPos < beginningIndex) return;
+        if (prevCaretPos < beginningIndex) return;
         this.editor.setCaretPosition(prevCaretPos);
     }
 
     findTrueIndex(cursorPos: number, buffer: Array<String>): void {
         let currPos = cursorPos;
         let trueIndex = 0;
-        while(buffer[currPos - 1] !== '\n'){
-            if(currPos <= 0) break;
+        while (buffer[currPos - 1] !== '\n') {
+            if (currPos <= 0) break;
             trueIndex++;
             currPos--;
         }
@@ -238,23 +258,26 @@ export default class Controller {
         this.trueIndex = trueIndex;
     }
 
-    handleClick(e: MouseEvent, gapBuffer: GapBuffer, newCursorPos: number, output: HTMLDivElement): void {
+    handleClick(e: MouseEvent, gapBuffer: GapBuffer, newCursorPos: number, 
+                output: HTMLDivElement): void {
         e.preventDefault();
         const cursorPos = gapBuffer.getCursorPos(); 
 
         this.relocateCursorOnClick(cursorPos, gapBuffer, newCursorPos);
         this.findTrueIndex(newCursorPos, gapBuffer.getBuffer());
 
-        this.editor.updateEditorText(this.gapBuffer, output);
+        this.editor.updateEditorText();
         this.editor.getStats();
     }
 
-    relocateCursorOnClick(cursorPos: number, gapBuffer: GapBuffer, newCursorPos: number): void {
-        if(newCursorPos === cursorPos) return;
+    relocateCursorOnClick(cursorPos: number, gapBuffer: GapBuffer, 
+                          newCursorPos: number): void {
+        if (newCursorPos === cursorPos) return;
         this.editor.setCursorAndCaret(gapBuffer, newCursorPos, newCursorPos);
     }
 
-    handleInput(cursorPos: number, gapBuffer: GapBuffer, e: KeyboardEvent, caretPos: number): void {
+    handleInput(cursorPos: number, gapBuffer: GapBuffer, e: KeyboardEvent, 
+                caretPos: number): void {
         const nextCursorPos = cursorPos + 1;
         const nextCaretPos = caretPos + 1;
         this.trueIndex++;
@@ -266,7 +289,8 @@ export default class Controller {
         this.editor.setCaretPosition(nextCaretPos);
     }
 
-    handleClosingChars(cursorPos: number, gapBuffer: GapBuffer, e: KeyboardEvent): void {
+    handleClosingChars(cursorPos: number, gapBuffer: GapBuffer, 
+                       e: KeyboardEvent): void {
         if(!this.charPairs.has(e.key)) return;
         const nextCursorPos = cursorPos + 1;
         const closingChar = this.charPairs.get(e.key);

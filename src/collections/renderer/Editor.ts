@@ -1,8 +1,11 @@
 import GapBuffer from "./GapBuffer";
 import Stats from "../../types/stats";
+import FileData from '../../types/fileData';
+import Controller from './Controller';
 
 export default class Editor {
     private text: HTMLTextAreaElement;
+    private title: HTMLTitleElement;
     private lineNumbers: HTMLDivElement;
     private currentRowCount: number;
     private prevRowCount: number;
@@ -11,10 +14,19 @@ export default class Editor {
     private charTracker: HTMLSpanElement;
     private totalLnTracker: HTMLSpanElement;
     private caretPosition: number;
+    private gapBuffer: GapBuffer;
+    private output: HTMLDivElement;
+    private controller: Controller;
     public filePath: string;
 
-    constructor(text: HTMLTextAreaElement, lineNumbers: HTMLDivElement, stats: Stats, caretPosition: number) {
+    constructor(text: HTMLTextAreaElement, lineNumbers: HTMLDivElement, 
+                stats: Stats) {
         this.text = text;
+        this.gapBuffer = new GapBuffer('');
+        this.output = document.getElementById('output') as HTMLDivElement;
+        this.title = document.querySelector('title') as HTMLTitleElement;
+        this.controller = new Controller(this, this.gapBuffer, 
+                                         this.text, this.output);
         this.lineNumbers = lineNumbers;
 
         //Stats
@@ -23,17 +35,23 @@ export default class Editor {
         this.colTracker = stats.col;
         this.charTracker = stats.char;
         this.totalLnTracker = stats.totalLn;
-        this.caretPosition = caretPosition;
+        this.caretPosition = this.gapBuffer.getGapLeft();
+
+        //Initialize
+        this.updateEditorText();
+        this.setLineNumbers();
+        this.setEventListeners();
     }
 
-    setEventListeners(output: HTMLDivElement): void {
-        this.text.addEventListener('scroll', () => this.syncScroll(output));
+    setEventListeners(): void {
+        this.text.addEventListener('scroll', () => 
+            this.syncScroll(this.output));
     }
     
     setLineNumbers(): void {
         this.prevRowCount = this.text.value.split('\n').length;
         let lineNumbers = '';
-        for(let i = 1; i <= this.prevRowCount; i++){
+        for (let i = 1; i <= this.prevRowCount; i++) {
             lineNumbers += `${i}\n`;
         }
         this.lineNumbers.textContent = lineNumbers;
@@ -48,28 +66,26 @@ export default class Editor {
     }
 
     removeSingleLineNumber(): void {
-        if(this.lineNumbers.textContent.length <= 2) return;
+        if (this.lineNumbers.textContent.length <= 2) return;
 
         let currIndex = this.lineNumbers.textContent.length - 1;
         const lastRow = this.lineNumbers.textContent[currIndex];
-        //Skipping the first instance of a line break so it doesn't tamper with the loop
-        if(lastRow === '\n'){
+
+        if (lastRow === '\n')
+            currIndex--;
+
+        while (this.lineNumbers.textContent[currIndex] !== '\n') {
             currIndex--;
         }
 
-        while(this.lineNumbers.textContent[currIndex] !== '\n'){
-            currIndex--;
-        }
-
-        //We want to leave the last line break alone which is it's included in the substring.
-        //This is because the line add follows the pattern of {number}\n
-        this.lineNumbers.textContent = this.lineNumbers.textContent.substring(0, currIndex + 1);
+        this.lineNumbers.textContent = this.lineNumbers.textContent
+            .substring(0, currIndex + 1);
         this.prevRowCount = this.currentRowCount;
         this.currentRowCount--;
     }
 
     handleUndo(e: KeyboardEvent, text: HTMLTextAreaElement): void {
-        if(e.key !== 'Ctrl' && e.key !== 'z') return;
+        if (e.key !== 'Ctrl' && e.key !== 'z') return;
         this.prevRowCount = text.value.split('\n').length;
         //this.handleLineNumber(text);
     }
@@ -108,47 +124,47 @@ export default class Editor {
         const tokens = this.tokenize(text);
     
         //sorry if u went into cardiac arrest reading this
-        for(let i = 0; i < tokens.length; i++){
+        for (let i = 0; i < tokens.length; i++) {
             //Add a space to the end of the last token if it's a newline.
             //Mostly just to catch the edge case of line breaks being placed
             //simultaneously.
-            if(i === tokens.length - 1 && tokens[i].match(/\n/g) ){
+            if (i === tokens.length - 1 && tokens[i].match(/\n/g) ) {
                 tokens[i] += ' ';
             };
 
             const escapedToken = this.escapeHtml(tokens[i]);
 
             //We don't want other tokens inside of comments to be highlighted.
-            if(singleLineComments.test(tokens[i])){
+            if (singleLineComments.test(tokens[i])) {
                 tokens[i] = `<span class="comment">${escapedToken}</span>`;
                 continue;
             }
-            if(multiLineComments.test(tokens[i])){
+            if (multiLineComments.test(tokens[i])) {
                 tokens[i] = `<span class="comment">${escapedToken}</span>`;
                 continue;
             }
 
-            if(keywords.test(tokens[i])){
+            if (keywords.test(tokens[i])) {
                 tokens[i] = `<span class="keyword">${escapedToken}</span>`;
                 continue;
             }
             
-            if(strings.test(tokens[i])){
+            if (strings.test(tokens[i])) {
                 tokens[i] = `<span class="string">${escapedToken}</span>`;
                 continue;
             }
             
-            if(numbers.test(tokens[i])){
+            if (numbers.test(tokens[i])) {
                 tokens[i] = `<span class="number">${escapedToken}</span>`;
                 continue;
             }
 
-            if(tokens[i].match(brackets)){
+            if (tokens[i].match(brackets)) {
                 tokens[i] = `<span class="bracket">${escapedToken}</span>`;
                 continue;
             }
 
-            if(tokens[i].match(operators)){
+            if (tokens[i].match(operators)) {
                 tokens[i] = `<span class="operator">${escapedToken}</span>`;
                 continue;
             }
@@ -169,11 +185,13 @@ export default class Editor {
         return remainingText.split('\n').length;
     }
 
-    //Optimize this using a loop which counts backwards. Current implementation very inefficient
+    //Optimize this using a loop which counts backwards. Current 
+    // implementation very inefficient
     getCurrCol(): number {
         const selectionStart = this.text.selectionStart;
         const textBeforeCursor = this.text.value.substring(0, selectionStart);
-        //The length of a substring made from the last selected line to the cursor is technically the current column.
+        //The length of a substring made from the last selected line to 
+        // the cursor is technically the current column.
         const currentRow = textBeforeCursor
             .split('\n')
             .pop() || '';
@@ -184,7 +202,8 @@ export default class Editor {
         return this.text.value.length;
     }
     
-    updateStatDisplay(row: number, col: number, char: number, totalLn: number): void {
+    updateStatDisplay(row: number, col: number, 
+                      char: number, totalLn: number): void {
         this.lnTracker.textContent = `Ln: ${row.toString()},`;
         this.colTracker.textContent = `Col: ${col.toString()}`;
         this.charTracker.textContent = `${char.toString()} characters,`;
@@ -207,15 +226,27 @@ export default class Editor {
         this.caretPosition = position;
     }
 
-    setCursorAndCaret(gapBuffer: GapBuffer, cursorPos: number, caretPos: number){
+    setCursorAndCaret(gapBuffer: GapBuffer, cursorPos: number, 
+                      caretPos: number){
         gapBuffer.setCursorPos(cursorPos);
         gapBuffer.moveCursor(cursorPos);
         this.setCaretPosition(caretPos);
     }
 
-    updateEditorText(gapBuffer: GapBuffer, output: HTMLDivElement): void {
-        this.text.value = gapBuffer.toString();
+    updateEditorText(): void {
+        this.text.value = this.gapBuffer.toString();
         this.text.setSelectionRange(this.caretPosition, this.caretPosition);
-        this.highlight(this.text, output);
+        this.highlight(this.text, this.output);
+    }
+
+    loadFileContent(e: Event, fileData: FileData): void {
+            this.text.value = fileData.content;
+            this.filePath = fileData.path;
+    
+            this.gapBuffer.loadText(fileData.content);
+            this.setLineNumbers();
+            this.updateEditorText();
+            this.getStats();
+            this.title.textContent = `Zector Editor - ${this.filePath}`;
     }
 }

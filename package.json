@@ -1,11 +1,11 @@
 {
-  "name": "kabuto-editor",
-  "productName": "kabuto-editor",
+  "name": "zector-editor",
+  "productName": "zector-editor",
   "version": "1.0.0",
   "description": "Simple text editor",
   "main": ".webpack/main",
   "build": {
-    "appId": "io.github.vunguyen312.kabuto",
+    "appId": "io.github.vunguyen312.zector",
     "productName": "MyApp",
     "mac": {
       "icon": "build/icon.icns"

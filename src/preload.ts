@@ -15,8 +15,8 @@ contextBridge.exposeInMainWorld('electron', {
         ipcRenderer.on('ping-save-as-data', callback);
     },
 
-    createNewFile: () => {
-        ipcRenderer.invoke('create-new-file');
+    createNewFile: async () => {
+        return await ipcRenderer.invoke('create-new-file');
     },
     saveFileData: (fileData: FileData) => {
         ipcRenderer.send('save-file-data', fileData);

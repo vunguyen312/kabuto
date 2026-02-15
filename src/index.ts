@@ -21,7 +21,7 @@ const createWindow = (): void => {
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
-    title: "Kabuto Editor",
+    title: "Zector Editor",
     icon: "build/icons/win/icon.ico",
     backgroundColor: "#ffffff",
     titleBarStyle: "hidden",
@@ -64,12 +64,12 @@ app.on('activate', () => {
   }
 });
 
-ipcMain.handle('create-new-file', (e) => {
-  return FileHandler.createFileDialog({ path: null, content: '' });
-});
+ipcMain.handle('create-new-file', async () => 
+  await FileHandler.createFileDialog({ path: null, content: '' }));
 
 ipcMain.on('save-file-data', (e, fileData: FileData) => {
-  if (!fileData.path || !FileHandler.verifyFile(fileData)) return FileHandler.createFileDialog(fileData);
+  if (!fileData.path || !FileHandler.verifyFile(fileData)) 
+    return FileHandler.createFileDialog(fileData);
   FileHandler.saveFileData(fileData);
 });
 

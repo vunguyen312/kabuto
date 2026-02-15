@@ -9,29 +9,33 @@ export default class GapBuffer {
     constructor(text: string){
         this.gapSize = 20;
         this.size = text.length + this.gapSize;
-        this.buffer = this.initialize(text);
         this.gapLeft = text.length;
         this.gapRight = this.size - 1;
         this.cursorPos = text.length;
+
+        this.loadText(text);
     }
 
-    initialize(text: string): Array<string> {
+    loadText(text: string): void {
         const newBuffer: Array<string> = new Array(text.length);
+        this.gapLeft = newBuffer.length;
+        this.gapRight = this.gapLeft + this.gapSize - 1;
         
-        for(let i = 0; i < text.length; i++){
+        for (let i = 0; i < text.length; i++) {
             newBuffer[i] = text[i];
         }
 
-        for(let i = 0; i < this.gapSize; i++){
+        for (let i = 0; i < this.gapSize; i++) {
             newBuffer.push('_');
         }
 
-        return newBuffer;
+        this.buffer = newBuffer;
+        this.size = newBuffer.length;
     }
 
     //i need to clean this up
     grow(len: number): void {
-        const newGapSize = this.gapRight - this.gapLeft + 1 + len;
+        const newGapSize = this.gapRight - this.gapLeft + len + 1;
         const newSize = this.size + len;
         const newBuffer: Array<string> = new Array(newSize);
 
@@ -56,7 +60,7 @@ export default class GapBuffer {
     }
 
     left(position: number): void {
-        while(position < this.gapLeft){
+        while (position < this.gapLeft) {
             this.gapLeft--;
             this.gapRight--;
             this.buffer[this.gapRight + 1] = this.buffer[this.gapLeft];
@@ -65,7 +69,7 @@ export default class GapBuffer {
     }
 
     right(position: number): void {
-        while(position > this.gapLeft){
+        while (position > this.gapLeft) {
             this.gapLeft++;
             this.gapRight++;
             this.buffer[this.gapLeft - 1] = this.buffer[this.gapRight];
@@ -74,7 +78,7 @@ export default class GapBuffer {
     }
 
     moveCursor(position: number): void {
-        if(position < this.gapLeft){
+        if (position < this.gapLeft) {
             return this.left(position);
         } 
         this.right(position);
@@ -82,13 +86,13 @@ export default class GapBuffer {
 
     insert(input: string, position: number): void {
         const len = input.length;
-        if(position !== this.gapLeft){
+        if (position !== this.gapLeft) {
             this.moveCursor(position);
         }
         
         let i = 0;
-        while(i < len){
-            if(this.gapRight === this.gapLeft){
+        while (i < len) {
+            if (this.gapRight === this.gapLeft) {
                 this.grow(this.gapSize);
             }
             this.buffer[this.gapLeft] = input[i];
@@ -98,12 +102,14 @@ export default class GapBuffer {
         }
     }
 
-    //TODO: Close gap size on the right when deleting. Might cause some performance issues during long editing sessions.
+    //TODO: Close gap size on the right when deleting. Might cause some 
+    // performance issues during long editing sessions.
     delete(position: number): void {
-        if(position - 1 < 0) return;
+        if (position - 1 < 0) return;
         this.moveCursor(position);
         this.gapLeft--;
-        //Gotta set the cursor pos in here because users can press backspace at the start.
+        //Gotta set the cursor pos in here because users can press backspace at
+        //  the start.
         this.cursorPos--;
         this.buffer[this.gapLeft] = '_';
         
@@ -111,7 +117,7 @@ export default class GapBuffer {
     }
     
     shortenGap(position: number): void {
-        for(let i = position; i < this.buffer.length; i++){
+        for (let i = position; i < this.buffer.length; i++) {
             this.buffer[i] = this.buffer[i + 1];
         }
         this.gapRight--;
@@ -158,7 +164,8 @@ export default class GapBuffer {
     toString(): string {
         return this.buffer
         //For testing
-            .filter((_, index) => index < this.gapLeft || index > this.gapRight)
+            .filter((_, index) => 
+                index < this.gapLeft || index > this.gapRight)
             .join('');
     }
 }
