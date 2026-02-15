@@ -15,7 +15,7 @@
   with Electron.js. </b>
 </p>
 
-<p align="center">"My Grandma once said... Walking the path of heaven, the man who will rule everything!"</p>
+<p align="center">"Clock up!"</p>
 
 
 ------------------------------------------------------------------------
@@ -44,7 +44,7 @@
 
 It provides essential file editing functionality within a clean,
 responsive desktop interface.
-The goal of Zector Editor is simplicity --- delivering core editing
+The goal of Zector Editor is simplicity and delivering core editing
 capabilities without unnecessary complexity.
 
 This project is ideal for:
