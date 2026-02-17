@@ -1,0 +1,115 @@
+import MenuItem from '../../types/menuItem';
+
+export default class MenuDefinition {
+    public static create(): Map<string, MenuItem[]> {
+        return new Map([
+            ['file', [
+                { 
+                    display: 'New File...', 
+                    shortcut: 'Ctrl+N', 
+                    action: 'file:new' 
+                }, 
+                { 
+                    display: 'New Window', 
+                    shortcut: 'Ctrl+Shift+N', 
+                    action: 'window:new'
+                }, 
+                { 
+                    display: 'Open File...', 
+                    shortcut: 'Ctrl+O', 
+                    action: 'file:open'
+                }, 
+                { 
+                    display: 'Save', 
+                    shortcut: 'Ctrl+S', 
+                    action: 'file:save'
+                }, 
+                { 
+                    display: 'Save As...', 
+                    shortcut: 'Ctrl+Shift+S', 
+                    action: 'file:saveas'
+                }, 
+                { 
+                    display: 'Exit', 
+                    shortcut: 'Alt+F4', 
+                    action: 'window:exit'
+                }
+            ]],
+            ['edit', [
+                { 
+                    display: 'Undo', 
+                    shortcut: 'Ctrl+Z', 
+                    action: 'edit:undo'
+                },
+                { 
+                    display: 'Redo', 
+                    shortcut: 'Ctrl+Y', 
+                    action: 'edit:redo'
+                },
+                { 
+                    display: 'Cut', 
+                    shortcut: 'Ctrl+X', 
+                    action: 'edit:cut'
+                },
+                { 
+                    display: 'Copy', 
+                    shortcut: 'Ctrl+C', 
+                    action: 'edit:copy'
+                },
+                { 
+                    display: 'Paste', 
+                    shortcut: 'Ctrl+V', 
+                    action: 'edit:paste'
+                }
+            ]],
+            ['selection', [
+                { 
+                    display: 'Select All', 
+                    shortcut: 'Ctrl+A', 
+                    action: 'selection:all'
+                }
+            ]],
+            ['view', [
+                { 
+                    display: 'Run', 
+                    shortcut: 'Ctrl+Shift+D',
+                    action: 'view:run'
+                }
+            ]],
+            ['terminal', [
+                { 
+                    display: 'New Terminal', 
+                    shortcut: 'Ctrl+Shift+`', 
+                    action: 'terminal:new'
+                },
+                { 
+                    display: 'New Terminal Window', 
+                    shortcut: 'Ctrl+Alt+`', 
+                    action: 'terminal:window'
+                },
+                { 
+                    display: 'Run Task...', 
+                    shortcut: '', 
+                    action: 'terminal:task'
+                }
+            ]],
+            ['help', [
+                { 
+                    display: 'Documentation', 
+                    shortcut: '', 
+                    action: 'help:documentation'
+                },
+                { 
+                    display: 'View License', 
+                    shortcut: '', 
+                    action: 'help:license'
+                },
+                { 
+                    display: 'About', 
+                    shortcut: '', 
+                    action: 'help:about'
+                }
+            ]]
+        ]);
+    }
+}

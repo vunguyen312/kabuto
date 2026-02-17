@@ -6,6 +6,7 @@ export default interface ElectronAPI {
     pingSaveData: (callback: () => void) => void;
     pingSaveAsData: (callback: () => void) => void;
     createNewFile: () => FileData;
+    openFile: () => FileData;
     saveFileData: (fileData: FileData) => void;
     saveFileAsData: (fileData: FileData) => void;
 }

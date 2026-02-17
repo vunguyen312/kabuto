@@ -1,6 +1,6 @@
 export default class GapBuffer {
+    private readonly gapSize: number;
     private buffer: Array<string>;
-    private gapSize: number;
     private gapLeft: number;
     private gapRight: number;
     private size: number;
@@ -18,7 +18,7 @@ export default class GapBuffer {
 
     loadText(text: string): void {
         const newBuffer: Array<string> = new Array(text.length);
-        this.gapLeft = newBuffer.length;
+        this.gapLeft = text.length;
         this.gapRight = this.gapLeft + this.gapSize - 1;
         
         for (let i = 0; i < text.length; i++) {
@@ -31,6 +31,7 @@ export default class GapBuffer {
 
         this.buffer = newBuffer;
         this.size = newBuffer.length;
+        this.cursorPos = this.gapLeft;
     }
 
     //i need to clean this up

@@ -10,9 +10,10 @@ export default class FileHandler {
 
         if (!result || result.canceled) return null;
 
-        const file = result.filePaths[0];
-        const content = fs.readFileSync(file, 'utf-8');
-        return { path: file, content: content };
+        const [filePath] = result.filePaths;
+        const content = fs.readFileSync(filePath, 'utf-8')
+                          .replace(/\r/g, '');
+        return { path: filePath, content: content };
     }
 
     static async createFileDialog(fileData: FileData) {

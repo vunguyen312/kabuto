@@ -1,146 +1,49 @@
 import MenuItem from '../../types/menuItem';
+import MenuDefinition from './MenuDefinition';
 
 export default class Menu {
     private loadFileContent: Function;
     private navButtons: HTMLCollectionOf<Element>;
     private activeMenu: string;
     private sectionDivs: Map<string, HTMLDivElement>;
-    private fileContent: MenuItem[];
-    private editContent: MenuItem[];
-    private selectionContent: MenuItem[];
-    private viewContent: MenuItem[];
-    private terminalContent: MenuItem[];
-    private helpContent: MenuItem[];
-    private sectionToContent: Map<string, MenuItem[]>
+    private functionMap: Map<string, Function>;
+    private menuSections: Map<string, MenuItem[]>;
 
     //i could lowkey put this all into one giant object and build it from there
     //  kinda like the old menu but like thats tomorrows problem
     constructor(loadFileContent: Function) {
         this.activeMenu = '';
+        this.loadFileContent = loadFileContent;
         this.navButtons = document.getElementsByClassName('nav-button');
         this.sectionDivs = this.createSectionDivs();
-        this.loadFileContent = loadFileContent;
-        this.fileContent = [
-            { 
-                display: 'New File...', 
-                shortcut: 'Ctrl+N', 
-                action: async () => await this.createNewFile() 
-            }, 
-            { 
-                display: 'New Window', 
-                shortcut: 'Ctrl+Shift+N', 
-                action: () => {console.log('placeholder')} 
-            }, 
-            { 
-                display: 'Open File...', 
-                shortcut: 'Ctrl+O', 
-                action: () => {console.log('placeholder')} 
-            }, 
-            { 
-                display: 'Save', 
-                shortcut: 'Ctrl+S', 
-                action: () => {console.log('placeholder')} 
-            }, 
-            { 
-                display: 'Save As...', 
-                shortcut: 'Ctrl+Shift+S', 
-                action: () => {console.log('placeholder')} 
-            }, 
-            { 
-                display: 'Exit', 
-                shortcut: 'Alt+F4', 
-                action: () => {console.log('placeholder')} 
-            }
-        ];
-        this.editContent = [
-            { 
-                display: 'Undo', 
-                shortcut: 'Ctrl+Z', 
-                action: () => {console.log('placeholder')} 
-            },
-            { 
-                display: 'Redo', 
-                shortcut: 'Ctrl+Y', 
-                action: () => {console.log('placeholder')}
-            },
-            { 
-                display: 'Cut', 
-                shortcut: 'Ctrl+X', 
-                action: () => {console.log('placeholder')} 
-            },
-            { 
-                display: 'Copy', 
-                shortcut: 'Ctrl+C', 
-                action: () => {console.log('placeholder')} 
-            },
-            { 
-                display: 'Paste', 
-                shortcut: 'Ctrl+V', 
-                action: () => {console.log('placeholder')} 
-            }
-        ];
-        this.selectionContent = [
-            { 
-                display: 'Select All', 
-                shortcut: 'Ctrl+A', 
-                action: () => {console.log('placeholder')} 
-            }
-        ];
-        this.viewContent = [
-            { 
-                display: 'Run', 
-                shortcut: 'Ctrl+Shift+D',
-                action: () => {console.log('placeholder')} 
-            }
-        ];
-        this.terminalContent = [
-            { 
-                display: 'New Terminal', 
-                shortcut: 'Ctrl+Shift+`', 
-                action: () => {console.log('placeholder')} 
-            },
-            { 
-                display: 'New Terminal Window', 
-                shortcut: 'Ctrl+Alt+`', 
-                action: () => {console.log('placeholder')} 
-            },
-            { 
-                display: 'Run Task...', 
-                shortcut: '', 
-                action: () => {console.log('placeholder')} 
-            }
-        ];
-        this.helpContent = [
-            { 
-                display: 'Documentation', 
-                shortcut: '', 
-                action: () => {console.log('placeholder')} 
-            },
-            { 
-                display: 'View License', 
-                shortcut: '', 
-                action: () => {console.log('placeholder')} 
-            },
-            { 
-                display: 'About', 
-                shortcut: '', 
-                action: () => {console.log('placeholder')} 
-            }
-        ];
-        this.sectionToContent = new Map([
-            ['file', this.fileContent],
-            ['edit', this.editContent],
-            ['selection', this.selectionContent],
-            ['view', this.viewContent],
-            ['terminal', this.terminalContent],
-            ['help', this.helpContent]
+        this.menuSections = MenuDefinition.create();
+        this.functionMap = new Map([
+            ['file:new', async () => await this.createNewFile()],
+            ['window:new', () => console.log('1')],
+            ['file:open', async () => await this.openFile()],
+            ['file:save', () => 1],
+            ['file:saveas', () => 1],
+            ['window:exit', () => 1],
+            ['edit:undo', () => 1],
+            ['edit:redo', () => 1],
+            ['edit:cut', () => 1],
+            ['edit:copy', () => 1],
+            ['edit:paste', () => 1],
+            ['selection:all', () => 1],
+            ['view:run', () => 1],
+            ['terminal:new', () => 1],
+            ['terminal:window', () => 1],
+            ['terminal:task', () => 1],
+            ['help:documentation', () => 1],
+            ['help:license', () => 1],
+            ['help:about', () => 1]
         ]);
 
         this.initializeNavBar();
     }
 
     initializeNavBar(): void {
-        for (const [section] of this.sectionToContent) {
+        for (const [section] of this.menuSections) {
             this.createSectionMenu(section);
         }
     }
@@ -165,21 +68,26 @@ export default class Menu {
     //making a function for each section is so chopped
     createSectionMenu(sectionID: string): void {
         const dropdown = this.sectionDivs.get(sectionID);
-        const sectionContent = this.sectionToContent.get(sectionID);
+        const sectionContent = this.menuSections.get(sectionID);
 
         for (const menuItem of sectionContent) {
+            const action = this.functionMap.get(menuItem.action);
             this.createMenuItem(menuItem.display, menuItem.shortcut, 
-                                menuItem.action, dropdown);
+                                action, dropdown);
         }
     }
 
-    createMenuItem(display: string, shortcut: string, action: Function, 
+    createMenuItem(display: string, shortcut: string, 
+                   action: Function, 
                    parent: HTMLDivElement): void {
         const newMenuItem = document.createElement('a');
         newMenuItem.className = 'dropdown-item';
         newMenuItem.href = '#';
         newMenuItem.textContent = display;
-        newMenuItem.addEventListener('click', () => action());
+        newMenuItem.addEventListener('click', () => {
+            this.toggleVisible(parent);
+            action();
+        });
 
         this.createShortcutDisplay(shortcut, newMenuItem);
         parent.append(newMenuItem);
@@ -211,9 +119,11 @@ export default class Menu {
 
     async createNewFile(): Promise<void> {
         const result = await window.electron.createNewFile();
-        const sectionDiv = this.sectionDivs.get('file');
-        
-        this.toggleVisible(sectionDiv);
-        if (result) this.loadFileContent(null, result);
+        if (result) this.loadFileContent(result);
+    }
+
+    async openFile(): Promise<void> {
+        const result = await window.electron.openFile();
+        if (result) this.loadFileContent(result);
     }
 }

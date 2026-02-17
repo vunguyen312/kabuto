@@ -14,14 +14,12 @@ contextBridge.exposeInMainWorld('electron', {
     pingSaveAsData: (callback: () => void) => {
         ipcRenderer.on('ping-save-as-data', callback);
     },
-
-    createNewFile: async () => {
-        return await ipcRenderer.invoke('create-new-file');
-    },
-    saveFileData: (fileData: FileData) => {
-        ipcRenderer.send('save-file-data', fileData);
-    },
-    saveFileAsData: (fileData: FileData) => {
-        ipcRenderer.send('save-file-as-data', fileData);
-    }
+    createNewFile: () => 
+        ipcRenderer.invoke('create-new-file'),
+    openFile: () =>
+        ipcRenderer.invoke('open-file'),
+    saveFileData: (fileData: FileData) => 
+        ipcRenderer.send('save-file-data', fileData),
+    saveFileAsData: (fileData: FileData) =>
+        ipcRenderer.send('save-file-as-data', fileData)
 });

@@ -55,6 +55,7 @@ export default class Editor {
             lineNumbers += `${i}\n`;
         }
         this.lineNumbers.textContent = lineNumbers;
+        this.currentRowCount = this.prevRowCount;
         console.log(this.currentRowCount, "set");
     }
 
@@ -239,14 +240,13 @@ export default class Editor {
         this.highlight(this.text, this.output);
     }
 
-    loadFileContent(e: Event, fileData: FileData): void {
-            this.text.value = fileData.content;
-            this.filePath = fileData.path;
-    
-            this.gapBuffer.loadText(fileData.content);
-            this.setLineNumbers();
-            this.updateEditorText();
-            this.getStats();
-            this.title.textContent = `Zector Editor - ${this.filePath}`;
+    loadFileContent(fileData: FileData): void {
+        this.filePath = fileData.path;
+        this.title.textContent = `Zector Editor - ${this.filePath}`;
+        
+        this.gapBuffer.loadText(fileData.content);
+        this.updateEditorText();
+        this.setLineNumbers();
+        this.getStats();
     }
 }

@@ -64,8 +64,11 @@ app.on('activate', () => {
   }
 });
 
-ipcMain.handle('create-new-file', async () => 
-  await FileHandler.createFileDialog({ path: null, content: '' }));
+ipcMain.handle('create-new-file', () => 
+  FileHandler.createFileDialog({ path: null, content: '' }));
+
+ipcMain.handle('open-file', () =>
+  FileHandler.openFileMenu());
 
 ipcMain.on('save-file-data', (e, fileData: FileData) => {
   if (!fileData.path || !FileHandler.verifyFile(fileData)) 

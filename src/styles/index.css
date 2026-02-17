@@ -102,8 +102,9 @@ body {
 #editor {
   display: flex;
   width: 100%;
-  height: 100%;
+  flex: 1;
   position: relative;
+  overflow: hidden;
 }
 
 #line-numbers {
@@ -117,7 +118,7 @@ body {
   text-align: right;
   border: none;
   resize: none;
-  padding: 5px 5px 15px 0px;
+  padding: 5px 5px 515px 0px;
   width: 50px;
   overflow: hidden;
   z-index: 1;
@@ -136,7 +137,7 @@ body {
   caret-color: var(--text-colour);
   white-space: nowrap;
   box-sizing: border-box;
-  padding: 5px;
+  padding: 5px 0 500px 0;
   border: none;
   resize: none; 
   overflow-x: auto;
@@ -175,8 +176,8 @@ textarea:focus {
 /* Scrollbar */
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -188,9 +189,14 @@ textarea:focus {
   border-radius: 12px;
 }
 
+::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: rgb(207, 207, 207);
   border-radius: 10px;
+  cursor: default;
 }
 
 /* Syntax Highlighting */

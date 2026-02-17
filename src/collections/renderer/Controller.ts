@@ -2,6 +2,7 @@ import GapBuffer from "./GapBuffer";
 import Editor from "./Editor";
 
 export default class Controller {
+    private readonly charPairs: Map<string, string>;
     private editor: Editor;
     private gapBuffer: GapBuffer;
     private tabSpaces: number;
@@ -9,7 +10,6 @@ export default class Controller {
     //Basically, it controls the behaviour text editors have when using up and 
     // down arrow keys to navigate
     private trueIndex: number;
-    private readonly charPairs: Map<string, string>;
 
     constructor(editor: Editor, gapBuffer: GapBuffer, 
                 text: HTMLTextAreaElement, output: HTMLDivElement) {
@@ -37,7 +37,7 @@ export default class Controller {
         text.addEventListener('keydown', (e: KeyboardEvent) => 
             this.listenForKeystrokes(e, text, output));
         text.addEventListener('click', (e: MouseEvent) => 
-            this.handleClick(e, this.gapBuffer, text.selectionStart, output));
+            this.handleClick(e, this.gapBuffer, text.selectionStart));
     }
 
     listenForKeystrokes(e: KeyboardEvent, text: HTMLTextAreaElement, 
@@ -220,12 +220,12 @@ export default class Controller {
     handleRightArrow(cursorPos: number, gapBuffer: GapBuffer, 
                      caretPos: number): void {
         const buffer = gapBuffer.getBuffer();
-        const bufferLength = buffer.length;
+        const bufferSize = gapBuffer.getSize();
         const currGapSize = gapBuffer.getCurrGap();
         const nextCursorPos = cursorPos + 1;
         const nextCaretPos = caretPos + 1;
 
-        if (nextCursorPos > bufferLength - currGapSize) return;
+        if (nextCursorPos > bufferSize - currGapSize) return;
 
         this.editor.setCursorAndCaret(gapBuffer, nextCursorPos, nextCaretPos);
         this.findTrueIndex(nextCursorPos, buffer);
@@ -258,8 +258,7 @@ export default class Controller {
         this.trueIndex = trueIndex;
     }
 
-    handleClick(e: MouseEvent, gapBuffer: GapBuffer, newCursorPos: number, 
-                output: HTMLDivElement): void {
+    handleClick(e: MouseEvent, gapBuffer: GapBuffer, newCursorPos: number): void {
         e.preventDefault();
         const cursorPos = gapBuffer.getCursorPos(); 
 

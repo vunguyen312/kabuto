@@ -1,5 +1,5 @@
 export default interface menuItem {
     display: string,
     shortcut: string,
-    action: Function
+    action: string
 }

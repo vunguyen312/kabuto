@@ -26,25 +26,11 @@ export default class Renderer {
 
         this.editor = new Editor(this.text, this.lineNumbers, 
                                  this.statTrackers);
-        this.menu = new Menu((e: Event, fileData: FileData) => 
-            this.editor.loadFileContent(e, fileData));
-    }
-
-    initializeEditor(): void {
-        window.electron.receiveFileData(
-            (e: Event, fileData: FileData) => this.editor.loadFileContent(e, fileData)
-        );
-        window.electron.pingSaveData(
-            () => window.electron.saveFileData({ path: this.editor.filePath, 
-                                                 content: this.text.value })
-        );
-        window.electron.pingSaveAsData(
-            () => window.electron.saveFileAsData({ path: this.editor.filePath, 
-                                                   content: this.text.value })
-        );
+        this.menu = new Menu((fileData: FileData) => 
+            this.editor.loadFileContent(fileData));
     }
 
     //TODO: Add compability with the GapBuffer
 }
 
-const renderer = new Renderer().initializeEditor();
+const renderer = new Renderer();
