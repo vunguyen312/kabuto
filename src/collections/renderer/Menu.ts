@@ -3,27 +3,18 @@ import MenuDefinition from './MenuDefinition';
 
 export default class Menu {
     private loadFileContent: Function;
+    private getFileData: Function;
     private navButtons: HTMLCollectionOf<Element>;
     private activeMenu: string;
     private sectionDivs: Map<string, HTMLDivElement>;
-    private functionMap: Map<string, Function>;
     private menuSections: Map<string, MenuItem[]>;
-
-    //i could lowkey put this all into one giant object and build it from there
-    //  kinda like the old menu but like thats tomorrows problem
-    constructor(loadFileContent: Function) {
-        this.activeMenu = '';
-        this.loadFileContent = loadFileContent;
-        this.navButtons = document.getElementsByClassName('nav-button');
-        this.sectionDivs = this.createSectionDivs();
-        this.menuSections = MenuDefinition.create();
-        this.functionMap = new Map([
+    private readonly functionMap = new Map([
             ['file:new', async () => await this.createNewFile()],
-            ['window:new', () => console.log('1')],
+            ['window:new', this.newWindow],
             ['file:open', async () => await this.openFile()],
-            ['file:save', () => 1],
-            ['file:saveas', () => 1],
-            ['window:exit', () => 1],
+            ['file:save', async () => await this.saveFile()],
+            ['file:saveas', async () => await this.saveFileAs()],
+            ['window:exit', this.exitWindow],
             ['edit:undo', () => 1],
             ['edit:redo', () => 1],
             ['edit:cut', () => 1],
@@ -38,6 +29,16 @@ export default class Menu {
             ['help:license', () => 1],
             ['help:about', () => 1]
         ]);
+
+    //i could lowkey put this all into one giant object and build it from there
+    //  kinda like the old menu but like thats tomorrows problem
+    constructor(loadFileContent: Function, getFileData: Function) {
+        this.activeMenu = '';
+        this.loadFileContent = loadFileContent;
+        this.getFileData = getFileData;
+        this.navButtons = document.getElementsByClassName('nav-button');
+        this.sectionDivs = this.createSectionDivs();
+        this.menuSections = MenuDefinition.create();
 
         this.initializeNavBar();
     }
@@ -125,5 +126,24 @@ export default class Menu {
     async openFile(): Promise<void> {
         const result = await window.electron.openFile();
         if (result) this.loadFileContent(result);
+    }
+
+    async saveFile(): Promise<void> {
+        const fileData = this.getFileData();
+        await window.electron.saveFile(fileData);
+    }
+
+    //TODO: change file path in editor
+    async saveFileAs(): Promise<void> {
+        const fileData = this.getFileData();
+        await window.electron.saveFileAs(fileData);
+    }
+
+    newWindow(): void {
+        window.electron.newWindow();
+    }
+
+    exitWindow(): void {
+        window.electron.exitWindow();
     }
 }

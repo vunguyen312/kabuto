@@ -27,10 +27,9 @@ export default class Renderer {
         this.editor = new Editor(this.text, this.lineNumbers, 
                                  this.statTrackers);
         this.menu = new Menu((fileData: FileData) => 
-            this.editor.loadFileContent(fileData));
+                                this.editor.loadFileContent(fileData),
+                             this.editor.getFileData);
     }
-
-    //TODO: Add compability with the GapBuffer
 }
 
 const renderer = new Renderer();

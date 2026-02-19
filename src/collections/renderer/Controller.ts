@@ -42,8 +42,6 @@ export default class Controller {
 
     listenForKeystrokes(e: KeyboardEvent, text: HTMLTextAreaElement, 
                         output: HTMLDivElement): void {
-        //this.editor.handleLineNumber(this.text);
-        //this.editor.getStats();
         e.preventDefault();
         this.editor.handleUndo(e, text);
         //Cursor pos refers to GapBuffer's gap
@@ -51,7 +49,6 @@ export default class Controller {
         //Caret pos refers to visual cursor on the editor
         const caretPos = this.editor.getCaretPosition();
 
-        //Might move all this key stuff to the editor class later
         switch(e.key) {
             case "Enter":
                 this.handleEnter(cursorPos, this.gapBuffer);

@@ -10,7 +10,7 @@ title {
 
 body {
   font-family: var(--font-family);
-  background-color: var(--bg);
+  background-color: var(--bg-secondary);
   max-width: 100%;
   height: 100vh;
   margin: 0;
@@ -127,7 +127,7 @@ body {
 #text-input, #output {
   width: calc(100% - 55px);
   height: 100%;
-  left: 55px;
+  left: 75px;
   position: absolute;
   background-color: var(--bg-secondary);
   color: #7fc1ff;

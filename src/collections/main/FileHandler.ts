@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import FileData from '../../types/fileData';
 
 export default class FileHandler {
-    static async openFileMenu() {
+    static async openFileMenu(): Promise<FileData> {
         const result = await dialog.showOpenDialog({
             properties: ['openFile']
         }).catch((err) => console.error(err));
@@ -16,7 +16,7 @@ export default class FileHandler {
         return { path: filePath, content: content };
     }
 
-    static async createFileDialog(fileData: FileData) {
+    static async createFileDialog(fileData: FileData): Promise<FileData> {
         const result = await dialog
             .showSaveDialog({})
             .catch((err) => console.error(err));
@@ -24,7 +24,7 @@ export default class FileHandler {
         if (!result || result.canceled) return null;
 
         const { filePath } = result;
-        fs.writeFileSync(filePath, fileData.content);
+        fs.writeFile(filePath, fileData.content, (err) => console.error(err));
         return { path: filePath, content: fileData.content };
     }
 
@@ -33,21 +33,10 @@ export default class FileHandler {
         return fs.existsSync(path);
     }
 
-    static sendFileData(window: any, fileData: FileData): void {
-        window.webContents.send("send-file-data", fileData);
-    }
-
-    static pingSaveData(window: any): void {
-        window.webContents.send('ping-save-data');
-    }
-
-    static pingSaveAsData(window: any): void {
-        window.webContents.send('ping-save-as-data');
-    }
-
-    static saveFileData(fileData: FileData): void {
+    static async saveFile(fileData: FileData): Promise<void> {
         console.log("Successfully saved file data");
         const { path, content } = fileData;
-        fs.writeFileSync(path, content);
+        //TODO: Add error catch if file location differs from one saved
+        fs.writeFile(path, content, (err) => console.log(err));
     }
 }

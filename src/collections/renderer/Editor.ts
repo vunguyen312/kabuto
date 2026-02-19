@@ -38,6 +38,10 @@ export default class Editor {
         this.caretPosition = this.gapBuffer.getGapLeft();
 
         //Initialize
+        this.init();
+    }
+
+    public init(): void {
         this.updateEditorText();
         this.setLineNumbers();
         this.setEventListeners();
@@ -56,7 +60,7 @@ export default class Editor {
         }
         this.lineNumbers.textContent = lineNumbers;
         this.currentRowCount = this.prevRowCount;
-        console.log(this.currentRowCount, "set");
+        console.log(this.currentRowCount, 'set');
     }
 
     addSingleLineNumber(): void {
@@ -248,5 +252,14 @@ export default class Editor {
         this.updateEditorText();
         this.setLineNumbers();
         this.getStats();
+    }
+
+    getFileData = (): FileData => {
+        const fileData = {
+            path: this.filePath,
+            content: this.text.value
+        };
+
+        return fileData;
     }
 }
