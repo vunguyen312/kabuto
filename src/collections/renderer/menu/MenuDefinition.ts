@@ -1,4 +1,4 @@
-import MenuItem from '../../types/menuItem';
+import MenuItem from '../../../types/menuItem';
 
 export default class MenuDefinition {
     public static create(): Map<string, MenuItem[]> {

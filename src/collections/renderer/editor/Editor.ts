@@ -1,6 +1,6 @@
 import GapBuffer from "./GapBuffer";
-import Stats from "../../types/stats";
-import FileData from '../../types/fileData';
+import Stats from "../../../types/stats";
+import FileData from '../../../types/fileData';
 import Controller from './Controller';
 
 export default class Editor {
@@ -13,7 +13,6 @@ export default class Editor {
     private colTracker: HTMLSpanElement;
     private charTracker: HTMLSpanElement;
     private totalLnTracker: HTMLSpanElement;
-    private caretPosition: number;
     private gapBuffer: GapBuffer;
     private output: HTMLDivElement;
     private controller: Controller;
@@ -25,9 +24,9 @@ export default class Editor {
         this.gapBuffer = new GapBuffer('');
         this.output = document.getElementById('output') as HTMLDivElement;
         this.title = document.querySelector('title') as HTMLTitleElement;
-        this.controller = new Controller(this, this.gapBuffer, 
-                                         this.text, this.output);
         this.lineNumbers = lineNumbers;
+        this.controller = new Controller(this, this.gapBuffer,
+                                         this.updateEditorText);
 
         //Stats
         this.currentRowCount = text.value.split('\n').length;
@@ -35,7 +34,6 @@ export default class Editor {
         this.colTracker = stats.col;
         this.charTracker = stats.char;
         this.totalLnTracker = stats.totalLn;
-        this.caretPosition = this.gapBuffer.getGapLeft();
 
         //Initialize
         this.init();
@@ -45,6 +43,7 @@ export default class Editor {
         this.updateEditorText();
         this.setLineNumbers();
         this.setEventListeners();
+        this.controller.init(this.text);
     }
 
     setEventListeners(): void {
@@ -223,24 +222,15 @@ export default class Editor {
         this.updateStatDisplay(row, col, char, totalLn);
     }
 
-    getCaretPosition(): number {
-        return this.caretPosition;
-    }
-
-    setCaretPosition(position: number): void {
-        this.caretPosition = position;
-    }
-
-    setCursorAndCaret(gapBuffer: GapBuffer, cursorPos: number, 
-                      caretPos: number){
+    setCursorAndCaret(gapBuffer: GapBuffer, cursorPos: number): void {
         gapBuffer.setCursorPos(cursorPos);
         gapBuffer.moveCursor(cursorPos);
-        this.setCaretPosition(caretPos);
     }
 
     updateEditorText(): void {
+        const gapLeft = this.gapBuffer.getGapLeft();
         this.text.value = this.gapBuffer.toString();
-        this.text.setSelectionRange(this.caretPosition, this.caretPosition);
+        this.text.setSelectionRange(gapLeft, gapLeft);
         this.highlight(this.text, this.output);
     }
 

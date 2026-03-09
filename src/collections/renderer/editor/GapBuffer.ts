@@ -91,17 +91,17 @@ export default class GapBuffer {
             this.moveCursor(position);
         }
         
-        let i = 0;
-        while (i < len) {
+        for (let index = 0; index < len; index++) {
             if (this.gapRight === this.gapLeft) {
                 this.grow(this.gapSize);
             }
-            this.buffer[this.gapLeft] = input[i];
+            this.buffer[this.gapLeft] = input[index];
             this.gapLeft++;
-            i++
             position++;
         }
     }
+
+    
 
     //TODO: Close gap size on the right when deleting. Might cause some 
     // performance issues during long editing sessions.

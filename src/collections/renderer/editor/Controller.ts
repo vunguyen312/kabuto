@@ -1,22 +1,9 @@
 import GapBuffer from "./GapBuffer";
 import Editor from "./Editor";
+import HistoryList from "./HistoryList";
 
 export default class Controller {
-    private readonly charPairs: Map<string, string>;
-    private editor: Editor;
-    private gapBuffer: GapBuffer;
-    private tabSpaces: number;
-    //Tracks the cursor's 'true' index in a single line
-    //Basically, it controls the behaviour text editors have when using up and 
-    // down arrow keys to navigate
-    private trueIndex: number;
-
-    constructor(editor: Editor, gapBuffer: GapBuffer, 
-                text: HTMLTextAreaElement, output: HTMLDivElement) {
-        this.editor = editor;
-        this.gapBuffer = gapBuffer;
-        this.trueIndex = 0;
-        this.charPairs = new Map([
+    private readonly charPairs = new Map([
             ['{', '}'],
             ['[', ']'],
             ["'", "'"],
@@ -24,56 +11,65 @@ export default class Controller {
             ['(', ')'],
             ['`', '`']
         ]);
+    private editor: Editor;
+    private gapBuffer: GapBuffer;
+    private tabSpaces = 4;
+    //Tracks the cursor's 'true' index in a single line
+    //Basically, it controls the behaviour text editors have when using up and 
+    // down arrow keys to navigate
+    private trueIndex = 0;
+    private historyList: HistoryList;
 
-        //Settings
-        this.tabSpaces = 4;
-
-        //Initialize
-        this.setEventListeners(text, output);
+    constructor(editor: Editor, gapBuffer: GapBuffer,
+                updateEditorText: Function) {
+        this.historyList = new HistoryList(updateEditorText);
+        this.editor = editor;
+        this.gapBuffer = gapBuffer;
     }
 
-    setEventListeners(text: HTMLTextAreaElement, 
-                      output: HTMLDivElement): void {
+    init(text: HTMLTextAreaElement): void {
+        this.setEventListeners(text);
+    }
+
+    setEventListeners(text: HTMLTextAreaElement): void {
         text.addEventListener('keydown', (e: KeyboardEvent) => 
-            this.listenForKeystrokes(e, text, output));
+            this.listenForKeystrokes(e, text));
         text.addEventListener('click', (e: MouseEvent) => 
             this.handleClick(e, this.gapBuffer, text.selectionStart));
     }
 
-    listenForKeystrokes(e: KeyboardEvent, text: HTMLTextAreaElement, 
-                        output: HTMLDivElement): void {
+    listenForKeystrokes(e: KeyboardEvent, text: HTMLTextAreaElement): void {
         e.preventDefault();
         this.editor.handleUndo(e, text);
         //Cursor pos refers to GapBuffer's gap
         const cursorPos = this.gapBuffer.getCursorPos();
-        //Caret pos refers to visual cursor on the editor
-        const caretPos = this.editor.getCaretPosition();
+        const isShortcut = e.ctrlKey || e.metaKey;
 
         switch(e.key) {
             case "Enter":
                 this.handleEnter(cursorPos, this.gapBuffer);
                 break;
             case "Backspace":
-                this.handleBackspace(cursorPos, this.gapBuffer, caretPos);
+                this.handleBackspace(cursorPos, this.gapBuffer);
                 break;
             case "Tab":
-                this.handleTab(cursorPos, this.gapBuffer, caretPos);
+                this.handleTab(cursorPos, this.gapBuffer);
                 break;
             case "ArrowRight":
-                this.handleRightArrow(cursorPos, this.gapBuffer, caretPos);
+                this.handleRightArrow(cursorPos, this.gapBuffer);
                 break;
             case "ArrowUp":
                 this.handleUpArrow(cursorPos, this.gapBuffer);
                 break;
             case "ArrowLeft":
-                this.handleLeftArrow(cursorPos, this.gapBuffer, caretPos);
+                this.handleLeftArrow(cursorPos, this.gapBuffer);
                 break;
             case "ArrowDown":
                 this.handleDownArrow(this.gapBuffer);
                 break;
             default:
                 if(e.key.length !== 1) return;
-                this.handleInput(cursorPos, this.gapBuffer, e, caretPos);
+                this.handleInput(cursorPos, this.gapBuffer, e);
                 break;
         }
 
@@ -98,47 +94,38 @@ export default class Controller {
 
     //TODO: Add custom undo with a stack or smth cuz it dont work w the 
     // tab spaces
-    handleTab(cursorPos: number, gapBuffer: GapBuffer, 
-              caretPos: number): void {
+    handleTab(cursorPos: number, gapBuffer: GapBuffer): void {
         const nextCursorPos = cursorPos + 1;
-        const nextCaretPos = caretPos + 1;
-        
-        gapBuffer.insert('\t', cursorPos);
-        this.editor.setCursorAndCaret(gapBuffer, nextCursorPos, nextCaretPos);
+        this.addText('\t', cursorPos, nextCursorPos, gapBuffer, null);
     }
 
     handleEnter(cursorPos: number, gapBuffer: GapBuffer): void {
         const nextCursorPos = cursorPos + 1;
-        const nextCaretPos = this.editor.getCaretPosition() + 1
         const beginningIndex = 0;
         this.trueIndex = beginningIndex;
 
-        gapBuffer.insert('\n', cursorPos);
-        gapBuffer.setCursorPos(nextCursorPos);
-        this.editor.setCaretPosition(nextCaretPos);
+        this.addText('\n', cursorPos, nextCursorPos, gapBuffer, null);
         this.editor.addSingleLineNumber();
     }
 
-    handleBackspace(cursorPos: number, gapBuffer: GapBuffer, 
-                    caretPos: number): void {
+    handleBackspace(cursorPos: number, gapBuffer: GapBuffer): void {
         const prevIndex = cursorPos - 1;
-        const prevCaretIndex = caretPos - 1;
         const beginningIndex = 0;
         const buffer = gapBuffer.getBuffer();
-        //If the next backspace deletes a line then remove a line number
+        
         if (cursorPos <= beginningIndex) return;
         if (buffer[prevIndex] === '\n') {
             this.editor.removeSingleLineNumber();
             
+            this.historyList.createNode('\n', 'delete', cursorPos);
             gapBuffer.delete(cursorPos);
             this.trueIndex = this.getTrueIndex(prevIndex, gapBuffer);
-            this.editor.setCaretPosition(prevCaretIndex);
             return;
         }
 
         this.trueIndex--;
+        this.historyList.createNode(buffer[prevIndex], 'delete', cursorPos);
         gapBuffer.delete(cursorPos);
-        this.editor.setCaretPosition(prevCaretIndex);
     }
 
     handleUpArrow(cursorPos: number, gapBuffer: GapBuffer): void {
@@ -172,9 +159,7 @@ export default class Controller {
         const prevRightMostPos = currPos + rightMostPos;
         const trueIndexPos = currPos + this.trueIndex + 1;
         const newPos = Math.min(prevRightMostPos, trueIndexPos);
-        //yo lowkey if cursorPos and caretPos r the same why do i have them as
-        // diff variables LOL
-        this.editor.setCursorAndCaret(gapBuffer, newPos, newPos);
+        this.editor.setCursorAndCaret(gapBuffer, newPos);
     }
 
     //You couldn't pay AI to optimize this LOL
@@ -211,36 +196,29 @@ export default class Controller {
         const trueIndexPos = leftIndex + this.trueIndex;
         const newPos = Math.min(nextRightMostPos, trueIndexPos);
 
-        this.editor.setCursorAndCaret(gapBuffer, newPos, newPos);
+        this.editor.setCursorAndCaret(gapBuffer, newPos);
     }
 
-    handleRightArrow(cursorPos: number, gapBuffer: GapBuffer, 
-                     caretPos: number): void {
+    handleRightArrow(cursorPos: number, gapBuffer: GapBuffer): void {
         const buffer = gapBuffer.getBuffer();
         const bufferSize = gapBuffer.getSize();
         const currGapSize = gapBuffer.getCurrGap();
         const nextCursorPos = cursorPos + 1;
-        const nextCaretPos = caretPos + 1;
 
         if (nextCursorPos > bufferSize - currGapSize) return;
 
-        this.editor.setCursorAndCaret(gapBuffer, nextCursorPos, nextCaretPos);
+        this.editor.setCursorAndCaret(gapBuffer, nextCursorPos);
         this.findTrueIndex(nextCursorPos, buffer);
     }
 
-    handleLeftArrow(cursorPos: number, gapBuffer: GapBuffer, 
-                    caretPos: number): void {
+    handleLeftArrow(cursorPos: number, gapBuffer: GapBuffer): void {
         const prevCursorPos = cursorPos - 1;
-        const prevCaretPos = caretPos - 1;
         const beginningIndex = 0;
         if (prevCursorPos < beginningIndex) return;
 
         gapBuffer.setCursorPos(prevCursorPos);
         gapBuffer.moveCursor(prevCursorPos);
         this.findTrueIndex(prevCursorPos, gapBuffer.getBuffer());
-
-        if (prevCaretPos < beginningIndex) return;
-        this.editor.setCaretPosition(prevCaretPos);
     }
 
     findTrueIndex(cursorPos: number, buffer: Array<String>): void {
@@ -269,20 +247,24 @@ export default class Controller {
     relocateCursorOnClick(cursorPos: number, gapBuffer: GapBuffer, 
                           newCursorPos: number): void {
         if (newCursorPos === cursorPos) return;
-        this.editor.setCursorAndCaret(gapBuffer, newCursorPos, newCursorPos);
+        this.editor.setCursorAndCaret(gapBuffer, newCursorPos);
     }
 
-    handleInput(cursorPos: number, gapBuffer: GapBuffer, e: KeyboardEvent, 
-                caretPos: number): void {
+    handleInput(cursorPos: number, gapBuffer: GapBuffer, 
+                e: KeyboardEvent): void {
+        const data = e.key;
         const nextCursorPos = cursorPos + 1;
-        const nextCaretPos = caretPos + 1;
         this.trueIndex++;
 
-        gapBuffer.insert(e.key, cursorPos);
-        //Insert the closing character if there is one
-        this.handleClosingChars(cursorPos, gapBuffer, e);
-        gapBuffer.setCursorPos(nextCursorPos);
-        this.editor.setCaretPosition(nextCaretPos);
+        this.addText(data, cursorPos, nextCursorPos, gapBuffer, e);
+    }
+
+    addText(data: string, insertPos: number, nextPos: number, 
+            gapBuffer: GapBuffer, e: KeyboardEvent): void {
+        this.historyList.createNode(data, 'insert', insertPos);
+        gapBuffer.insert(data, insertPos);
+        if (e) this.handleClosingChars(insertPos, gapBuffer, e);
+        gapBuffer.setCursorPos(nextPos);
     }
 
     handleClosingChars(cursorPos: number, gapBuffer: GapBuffer, 
@@ -291,6 +273,10 @@ export default class Controller {
         const nextCursorPos = cursorPos + 1;
         const closingChar = this.charPairs.get(e.key);
         gapBuffer.insert(closingChar, nextCursorPos);
+    }
+
+    handleUndo(): void {
+        //test
     }
 }
 

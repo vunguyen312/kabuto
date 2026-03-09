@@ -1,6 +1,6 @@
 import './styles/index.css';
-import Editor from './collections/renderer/Editor';
-import Menu from './collections/renderer/Menu';
+import Editor from './collections/renderer/editor/Editor';
+import Menu from './collections/renderer/menu/Menu';
 import Stats from "./types/stats";
 import FileData from './types/fileData';
 
@@ -8,7 +8,7 @@ export default class Renderer {
     private text: HTMLTextAreaElement;
     private lineNumbers: HTMLDivElement;
     private statTrackers: Stats;
-    private editor: Editor;
+    private editors: Editor[];
     private menu: Menu;
 
     constructor(){
@@ -24,11 +24,11 @@ export default class Renderer {
             totalLn: document.getElementById('totalLn') as HTMLSpanElement
         }
 
-        this.editor = new Editor(this.text, this.lineNumbers, 
-                                 this.statTrackers);
+        this.editors = [new Editor(this.text, this.lineNumbers, 
+                                 this.statTrackers)];
         this.menu = new Menu((fileData: FileData) => 
-                                this.editor.loadFileContent(fileData),
-                             this.editor.getFileData);
+                                this.editors[0].loadFileContent(fileData),
+                             this.editors[0].getFileData);
     }
 }
 

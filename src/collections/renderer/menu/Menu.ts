@@ -1,4 +1,4 @@
-import MenuItem from '../../types/menuItem';
+import MenuItem from '../../../types/menuItem';
 import MenuDefinition from './MenuDefinition';
 
 export default class Menu {
