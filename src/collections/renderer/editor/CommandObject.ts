@@ -5,37 +5,54 @@ export default class CommandObject {
     private data: string;
     private instruction: Instruction;
     private location: number;
-    private updateEditorText: Function;
 
-    constructor(data: string, instruction: Instruction, location: number,
-                updateEditorText: Function) {
+    constructor(data: string, instruction: Instruction, location: number) {
         this.data = data;
         this.instruction = instruction;
         this.location = location;
-        this.updateEditorText = updateEditorText;
     }
 
-    execute(gapBuffer: GapBuffer): void {
+    undo(gapBuffer: GapBuffer): void {
         const dataLength = this.data.length;
         
-        if (this.instruction === 'insert') {
-            return gapBuffer.insert(this.data, this.location);
+        if (this.instruction === 'delete') {
+            const insertLocation = this.location - 1;
+            gapBuffer.insert(this.data, insertLocation);
+            gapBuffer.setCursorPos(insertLocation + dataLength);
+            return;
         }
         
         for (let totalDeleted = 0; totalDeleted < dataLength; totalDeleted++) {
-            gapBuffer.delete(this.location - totalDeleted);
+            const charLocation = this.location + dataLength - totalDeleted;
+            gapBuffer.delete(charLocation);
         }
+
+        gapBuffer.setCursorPos(this.location);
     }
 
     merge(command: CommandObject): boolean {
         const cmdData = command.data;
         const cmdInstruction = command.instruction;
+        const cmdLocation = command.location;
+        const dataLength = this.data.length;
+        const isContiguousDelete = cmdLocation === this.location - 1;
+        const isContiguousInsert = cmdLocation === this.location + dataLength;
 
-        if (cmdInstruction === this.instruction) {
-            this.data += cmdData;
+        if (cmdInstruction !== this.instruction) {
+            return false;
+        }
+
+        if (cmdInstruction === 'delete' && isContiguousDelete) {
+            this.location = cmdLocation;
+            this.data = cmdData + this.data; 
             return true;
         }
 
-        return false;
+        if (!isContiguousInsert) {
+            return false;
+        }
+
+        this.data += cmdData;
+        return true;
     }
 }

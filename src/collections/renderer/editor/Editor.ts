@@ -25,8 +25,7 @@ export default class Editor {
         this.output = document.getElementById('output') as HTMLDivElement;
         this.title = document.querySelector('title') as HTMLTitleElement;
         this.lineNumbers = lineNumbers;
-        this.controller = new Controller(this, this.gapBuffer,
-                                         this.updateEditorText);
+        this.controller = new Controller(this, this.gapBuffer);
 
         //Stats
         this.currentRowCount = text.value.split('\n').length;
@@ -75,8 +74,9 @@ export default class Editor {
         let currIndex = this.lineNumbers.textContent.length - 1;
         const lastRow = this.lineNumbers.textContent[currIndex];
 
-        if (lastRow === '\n')
+        if (lastRow === '\n') {
             currIndex--;
+        }
 
         while (this.lineNumbers.textContent[currIndex] !== '\n') {
             currIndex--;

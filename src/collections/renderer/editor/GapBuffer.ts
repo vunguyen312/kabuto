@@ -80,7 +80,8 @@ export default class GapBuffer {
 
     moveCursor(position: number): void {
         if (position < this.gapLeft) {
-            return this.left(position);
+            this.left(position);
+            return;
         } 
         this.right(position);
     }

@@ -18,11 +18,12 @@ export default class Controller {
     //Basically, it controls the behaviour text editors have when using up and 
     // down arrow keys to navigate
     private trueIndex = 0;
-    private historyList: HistoryList;
+    private undoList: HistoryList;
+    private redoList: HistoryList;
 
-    constructor(editor: Editor, gapBuffer: GapBuffer,
-                updateEditorText: Function) {
-        this.historyList = new HistoryList(updateEditorText);
+    constructor(editor: Editor, gapBuffer: GapBuffer) {
+        this.undoList = new HistoryList();
+        this.redoList = new HistoryList();
         this.editor = editor;
         this.gapBuffer = gapBuffer;
     }
@@ -66,6 +67,13 @@ export default class Controller {
                 break;
             case "ArrowDown":
                 this.handleDownArrow(this.gapBuffer);
+                break;
+            case "z":
+                if (isShortcut) {
+                    this.handleUndo(this.gapBuffer);
+                } else {
+                    this.handleInput(cursorPos, this.gapBuffer, e);
+                }
                 break;
             default:
                 if(e.key.length !== 1) return;
@@ -113,18 +121,20 @@ export default class Controller {
         const beginningIndex = 0;
         const buffer = gapBuffer.getBuffer();
         
-        if (cursorPos <= beginningIndex) return;
+        if (cursorPos <= beginningIndex) {
+            return;
+        }
         if (buffer[prevIndex] === '\n') {
             this.editor.removeSingleLineNumber();
             
-            this.historyList.createNode('\n', 'delete', cursorPos);
+            this.undoList.createNode('\n', 'delete', cursorPos);
             gapBuffer.delete(cursorPos);
             this.trueIndex = this.getTrueIndex(prevIndex, gapBuffer);
             return;
         }
 
         this.trueIndex--;
-        this.historyList.createNode(buffer[prevIndex], 'delete', cursorPos);
+        this.undoList.createNode(buffer[prevIndex], 'delete', cursorPos);
         gapBuffer.delete(cursorPos);
     }
 
@@ -148,10 +158,12 @@ export default class Controller {
             
             currPos--;
 
-            //Prevents attempts to go up on the first line
-            if (currPos < beginningIndex && breaksFound === beginningIndex) 
+            if (currPos < beginningIndex && breaksFound === beginningIndex) {
                 return;
-            if (currPos < beginningIndex) break;
+            }
+            if (currPos < beginningIndex) {
+                break;
+            }
             
             if (buffer[currPos] === '\n') breaksFound++;
         }
@@ -214,11 +226,12 @@ export default class Controller {
     handleLeftArrow(cursorPos: number, gapBuffer: GapBuffer): void {
         const prevCursorPos = cursorPos - 1;
         const beginningIndex = 0;
+        const buffer = gapBuffer.getBuffer();
         if (prevCursorPos < beginningIndex) return;
 
         gapBuffer.setCursorPos(prevCursorPos);
         gapBuffer.moveCursor(prevCursorPos);
-        this.findTrueIndex(prevCursorPos, gapBuffer.getBuffer());
+        this.findTrueIndex(prevCursorPos, buffer);
     }
 
     findTrueIndex(cursorPos: number, buffer: Array<String>): void {
@@ -261,9 +274,11 @@ export default class Controller {
 
     addText(data: string, insertPos: number, nextPos: number, 
             gapBuffer: GapBuffer, e: KeyboardEvent): void {
-        this.historyList.createNode(data, 'insert', insertPos);
+        this.undoList.createNode(data, 'insert', insertPos);
         gapBuffer.insert(data, insertPos);
-        if (e) this.handleClosingChars(insertPos, gapBuffer, e);
+        if (e) {
+            this.handleClosingChars(insertPos, gapBuffer, e);
+        }
         gapBuffer.setCursorPos(nextPos);
     }
 
@@ -275,8 +290,16 @@ export default class Controller {
         gapBuffer.insert(closingChar, nextCursorPos);
     }
 
-    handleUndo(): void {
-        //test
+    handleUndo(gapBuffer: GapBuffer): void {
+        const head = this.undoList.getHead();
+        
+        if (!head) {
+            return;
+        }
+
+        const command = head.getCommand();
+        command.undo(gapBuffer);
+        this.undoList.removeHead();
     }
 }
 
