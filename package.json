@@ -22,6 +22,7 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint --ext .ts,.tsx ."
   },
   "devDependencies": {
@@ -48,7 +49,7 @@
     "style-loader": "^3.3.4",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
-    "typescript": "~4.5.4"
+    "typescript": "~4.9.5"
   },
   "keywords": [],
   "author": {

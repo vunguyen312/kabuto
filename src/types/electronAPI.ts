@@ -1,10 +1,10 @@
 import FileData from "./fileData";
 
 export default interface ElectronAPI {
-    createNewFile: () => FileData;
-    newWindow: () => void;
-    openFile: () => FileData;
-    saveFile: (fileData: FileData) => void;
-    saveFileAs: (fileData: FileData) => void;
-    exitWindow: () => void;
+    createNewFile: () => Promise<FileData | null>;
+    newWindow: () => Promise<void>;
+    openFile: () => Promise<FileData | null>;
+    saveFile: (fileData: FileData) => Promise<void>;
+    saveFileAs: (fileData: FileData) => Promise<FileData | null>;
+    exitWindow: () => Promise<void>;
 }

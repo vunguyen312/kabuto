@@ -2,29 +2,30 @@ import CommandObject from "./CommandObject";
 import { Instruction } from "../../../types/cmdObj";
 
 class Node {
-    private prevNode: Node;
-    private nextNode: Node;
+    private prevNode: Node | null;
+    private nextNode: Node | null;
     private readonly command: CommandObject;
 
-    constructor(prevNode: Node, nextNode: Node, command: CommandObject) {
+    constructor(prevNode: Node | null, nextNode: Node | null,
+                command: CommandObject) {
         this.prevNode = prevNode;
         this.nextNode = nextNode;
         this.command = command;
     }
 
-    setPrev(node: Node): void {
+    setPrev(node: Node | null): void {
         this.prevNode = node;
     }
 
-    setNext(node: Node): void {
+    setNext(node: Node | null): void {
         this.nextNode = node;
     }
 
-    getPrev(): Node {
+    getPrev(): Node | null {
         return this.prevNode;
     }
 
-    getNext(): Node {
+    getNext(): Node | null {
         return this.nextNode;
     }
 
@@ -34,10 +35,10 @@ class Node {
 }
 
 export default class HistoryList {
-    private readonly actionLimit;
-    private actionCount;
-    private head: Node;
-    private tail: Node;
+    private readonly actionLimit: number;
+    private actionCount: number;
+    private head: Node | null;
+    private tail: Node | null;
 
     constructor() {
         //TODO: FINISH IMPLEMENTING ACTION LIMITS
@@ -77,6 +78,10 @@ export default class HistoryList {
     }
 
     removeHead(): void {
+        if (!this.head) {
+            return;
+        }
+
         const prevNode = this.head.getPrev();
         //this.printList();
 
@@ -116,14 +121,14 @@ export default class HistoryList {
             return;
         }
 
-        let curr = this.head;
+        let curr: Node | null = this.head;
         while (curr) {
             console.log(curr);
             curr = curr.getPrev();
         }
     }
 
-    getHead(): Node {
+    getHead(): Node | null {
         return this.head;
     }
 }

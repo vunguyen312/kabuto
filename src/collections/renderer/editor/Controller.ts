@@ -13,17 +13,14 @@ export default class Controller {
         ]);
     private editor: Editor;
     private gapBuffer: GapBuffer;
-    private tabSpaces = 4;
     //Tracks the cursor's 'true' index in a single line
     //Basically, it controls the behaviour text editors have when using up and 
     // down arrow keys to navigate
     private trueIndex = 0;
     private undoList: HistoryList;
-    private redoList: HistoryList;
 
     constructor(editor: Editor, gapBuffer: GapBuffer) {
         this.undoList = new HistoryList();
-        this.redoList = new HistoryList();
         this.editor = editor;
         this.gapBuffer = gapBuffer;
     }
@@ -98,6 +95,8 @@ export default class Controller {
 
             index--;
         }
+
+        return cursorPos - index;
     }
 
     //TODO: Add custom undo with a stack or smth cuz it dont work w the 
@@ -234,7 +233,7 @@ export default class Controller {
         this.findTrueIndex(prevCursorPos, buffer);
     }
 
-    findTrueIndex(cursorPos: number, buffer: Array<String>): void {
+    findTrueIndex(cursorPos: number, buffer: string[]): void {
         let currPos = cursorPos;
         let trueIndex = 0;
         while (buffer[currPos - 1] !== '\n') {
@@ -273,7 +272,7 @@ export default class Controller {
     }
 
     addText(data: string, insertPos: number, nextPos: number, 
-            gapBuffer: GapBuffer, e: KeyboardEvent): void {
+            gapBuffer: GapBuffer, e: KeyboardEvent | null): void {
         this.undoList.createNode(data, 'insert', insertPos);
         gapBuffer.insert(data, insertPos);
         if (e) {
@@ -286,7 +285,7 @@ export default class Controller {
                        e: KeyboardEvent): void {
         if(!this.charPairs.has(e.key)) return;
         const nextCursorPos = cursorPos + 1;
-        const closingChar = this.charPairs.get(e.key);
+        const closingChar = this.charPairs.get(e.key)!;
         gapBuffer.insert(closingChar, nextCursorPos);
     }
 

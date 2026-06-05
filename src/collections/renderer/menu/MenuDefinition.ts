@@ -1,7 +1,8 @@
 import MenuItem from '../../../types/menuItem';
+import type { MenuSectionId } from './Menu';
 
 export default class MenuDefinition {
-    public static create(): Map<string, MenuItem[]> {
+    public static create(): Map<MenuSectionId, MenuItem[]> {
         return new Map([
             ['file', [
                 { 

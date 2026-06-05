@@ -8,6 +8,7 @@ export default class GapBuffer {
 
     constructor(text: string){
         this.gapSize = 20;
+        this.buffer = new Array();
         this.size = text.length + this.gapSize;
         this.gapLeft = text.length;
         this.gapRight = this.size - 1;

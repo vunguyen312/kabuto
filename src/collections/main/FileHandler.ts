@@ -1,9 +1,9 @@
-import { BrowserView, BrowserWindow, dialog, WebContentsView } from 'electron';
+import { dialog } from 'electron';
 import * as fs from 'fs';
 import FileData from '../../types/fileData';
 
 export default class FileHandler {
-    static async openFileMenu(): Promise<FileData> {
+    static async openFileMenu(): Promise<FileData | null> {
         const result = await dialog.showOpenDialog({
             properties: ['openFile']
         }).catch((err) => console.error(err));
@@ -16,7 +16,7 @@ export default class FileHandler {
         return { path: filePath, content: content };
     }
 
-    static async createFileDialog(fileData: FileData): Promise<FileData> {
+    static async createFileDialog(fileData: FileData): Promise<FileData | null> {
         const result = await dialog
             .showSaveDialog({})
             .catch((err) => console.error(err));
@@ -30,12 +30,14 @@ export default class FileHandler {
 
     static async verifyFile(fileData: FileData): Promise<boolean> {
         const { path } = fileData;
+        if (!path) return false;
         return fs.existsSync(path);
     }
 
     static async saveFile(fileData: FileData): Promise<void> {
         console.log("Successfully saved file data");
         const { path, content } = fileData;
+        if (!path) return;
         //TODO: Add error catch if file location differs from one saved
         fs.writeFile(path, content, (err) => console.log(err));
     }

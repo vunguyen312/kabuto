@@ -32,4 +32,4 @@ export default class Renderer {
     }
 }
 
-const renderer = new Renderer();
+new Renderer();

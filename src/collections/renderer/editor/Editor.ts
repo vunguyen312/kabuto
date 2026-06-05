@@ -16,7 +16,7 @@ export default class Editor {
     private gapBuffer: GapBuffer;
     private output: HTMLDivElement;
     private controller: Controller;
-    public filePath: string;
+    public filePath: string | undefined;
 
     constructor(text: HTMLTextAreaElement, lineNumbers: HTMLDivElement, 
                 stats: Stats) {
@@ -25,7 +25,10 @@ export default class Editor {
         this.output = document.getElementById('output') as HTMLDivElement;
         this.title = document.querySelector('title') as HTMLTitleElement;
         this.lineNumbers = lineNumbers;
+        this.currentRowCount = 0;
+        this.prevRowCount = 0;
         this.controller = new Controller(this, this.gapBuffer);
+        this.filePath = '';
 
         //Stats
         this.currentRowCount = text.value.split('\n').length;
@@ -95,7 +98,7 @@ export default class Editor {
     }
 
     tokenize(text: HTMLTextAreaElement): string[] {
-        const regex = /(\bconst\b|\blet\b|\bvar\b|\bif\b|\belse\b|\bfor\b|\bwhile\b|\bfunction\b|\breturn\b|\bclass\b|\bimport\b|\bexport\b|\basync\b|\bawait\b|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|\b\d+(\.\d+)?\b|\/\/.*?$|\/\*[\s\S]*?\*\/|[\(\)\[\]\{\}]|[+\-*/%=&|^~<>!;.]=?|&&|\|\|)/gm;
+        const regex = /(\bconst\b|\blet\b|\bvar\b|\bif\b|\belse\b|\bfor\b|\bwhile\b|\bfunction\b|\breturn\b|\bclass\b|\bimport\b|\bexport\b|\basync\b|\bawait\b|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|\b\d+(\.\d+)?\b|\/\/.*?$|\/\*[\s\S]*?\*\/|[()[\]{}]|[+\-*/%=&|^~<>!;.]=?|&&|\|\|)/gm;
         //Split JavaScript keywords into tokens.
         //TODO: Get this from JSON so other languages can be supported.
         return text.value
@@ -122,7 +125,7 @@ export default class Editor {
         const numbers = /\b\d+(\.\d+)?\b/g;
         const singleLineComments = /\/\/.*?$/gm;
         const multiLineComments = /\/\*[\s\S]*?\*\//g;
-        const brackets = /[\(\)\[\]\{\}]/g;
+        const brackets = /[()[\]{}]/g;
         const operators = /[+\-*/%=&|^~<>!;.]=?|&&|\|\|/g;
         
         const tokens = this.tokenize(text);
@@ -134,7 +137,7 @@ export default class Editor {
             //simultaneously.
             if (i === tokens.length - 1 && tokens[i].match(/\n/g) ) {
                 tokens[i] += ' ';
-            };
+            }
 
             const escapedToken = this.escapeHtml(tokens[i]);
 

@@ -1,38 +1,45 @@
-import MenuItem from '../../../types/menuItem';
+import MenuItem, { MenuActionId } from '../../../types/menuItem';
 import MenuDefinition from './MenuDefinition';
+import FileData from '../../../types/fileData';
+
+type LoadFileContent = (fileData: FileData) => void;
+type GetFileData = () => FileData;
+type MenuAction = () => void | Promise<void>;
+export type MenuSectionId = 'file' | 'edit' | 'selection' | 'view' 
+                            | 'terminal' | 'help';
 
 export default class Menu {
-    private loadFileContent: Function;
-    private getFileData: Function;
+    private loadFileContent: LoadFileContent;
+    private getFileData: GetFileData;
     private navButtons: HTMLCollectionOf<Element>;
-    private activeMenu: string;
-    private sectionDivs: Map<string, HTMLDivElement>;
-    private menuSections: Map<string, MenuItem[]>;
-    private readonly functionMap = new Map([
-            ['file:new', async () => await this.createNewFile()],
-            ['window:new', this.newWindow],
-            ['file:open', async () => await this.openFile()],
-            ['file:save', async () => await this.saveFile()],
-            ['file:saveas', async () => await this.saveFileAs()],
-            ['window:exit', this.exitWindow],
-            ['edit:undo', () => 1],
-            ['edit:redo', () => 1],
-            ['edit:cut', () => 1],
-            ['edit:copy', () => 1],
-            ['edit:paste', () => 1],
-            ['selection:all', () => 1],
-            ['view:run', () => 1],
-            ['terminal:new', () => 1],
-            ['terminal:window', () => 1],
-            ['terminal:task', () => 1],
-            ['help:documentation', () => 1],
-            ['help:license', () => 1],
-            ['help:about', () => 1]
-        ]);
+    private activeMenu: MenuSectionId | '';
+    private sectionDivs: Map<MenuSectionId, HTMLDivElement>;
+    private menuSections: Map<MenuSectionId, MenuItem[]>;
+    private readonly functionMap: Record<MenuActionId, MenuAction> = {
+            'file:new': async () => await this.createNewFile(),
+            'window:new': () => this.newWindow(),
+            'file:open': async () => await this.openFile(),
+            'file:save': async () => await this.saveFile(),
+            'file:saveas': async () => await this.saveFileAs(),
+            'window:exit': () => this.exitWindow(),
+            'edit:undo': () => {},
+            'edit:redo': () => {},
+            'edit:cut': () => {},
+            'edit:copy': () => {},
+            'edit:paste': () => {},
+            'selection:all': () => {},
+            'view:run': () => {},
+            'terminal:new': () => {},
+            'terminal:window': () => {},
+            'terminal:task': () => {},
+            'help:documentation': () => {},
+            'help:license': () => {},
+            'help:about': () => {}
+        };
 
     //i could lowkey put this all into one giant object and build it from there
     //  kinda like the old menu but like thats tomorrows problem
-    constructor(loadFileContent: Function, getFileData: Function) {
+    constructor(loadFileContent: LoadFileContent, getFileData: GetFileData) {
         this.activeMenu = '';
         this.loadFileContent = loadFileContent;
         this.getFileData = getFileData;
@@ -49,37 +56,38 @@ export default class Menu {
         }
     }
 
-    createSectionDivs(): Map<string, HTMLDivElement> {
-        const sectionDivs = new Map();
+    createSectionDivs(): Map<MenuSectionId, HTMLDivElement> {
+        const sectionDivs = new Map<MenuSectionId, HTMLDivElement>();
 
         for (const navButton of this.navButtons) {
+            const sectionID = navButton.id as MenuSectionId;
             const sectionDiv = document.createElement('div');
             sectionDiv.className = 'dropdown-content';
-            sectionDiv.id = `${navButton.id}`;
+            sectionDiv.id = sectionID;
             
             navButton.after(sectionDiv);
             navButton.addEventListener('click', () => 
                 this.toggleVisible(sectionDiv));
-            sectionDivs.set(navButton.id, sectionDiv);
+            sectionDivs.set(sectionID, sectionDiv);
         }
 
         return sectionDivs;
     }
 
     //making a function for each section is so chopped
-    createSectionMenu(sectionID: string): void {
-        const dropdown = this.sectionDivs.get(sectionID);
-        const sectionContent = this.menuSections.get(sectionID);
+    createSectionMenu(sectionID: MenuSectionId): void {
+        const dropdown = this.sectionDivs.get(sectionID)!;
+        const sectionContent = this.menuSections.get(sectionID)!;
 
         for (const menuItem of sectionContent) {
-            const action = this.functionMap.get(menuItem.action);
+            const action = this.functionMap[menuItem.action];
             this.createMenuItem(menuItem.display, menuItem.shortcut, 
                                 action, dropdown);
         }
     }
 
     createMenuItem(display: string, shortcut: string, 
-                   action: Function, 
+                   action: MenuAction,
                    parent: HTMLDivElement): void {
         const newMenuItem = document.createElement('a');
         newMenuItem.className = 'dropdown-item';
@@ -87,7 +95,7 @@ export default class Menu {
         newMenuItem.textContent = display;
         newMenuItem.addEventListener('click', () => {
             this.toggleVisible(parent);
-            action();
+            void action();
         });
 
         this.createShortcutDisplay(shortcut, newMenuItem);
@@ -106,12 +114,12 @@ export default class Menu {
         const currentDisplay = section.style.display;
 
         if (this.activeMenu !== section.id && this.activeMenu !== '') {
-            this.toggleVisible(this.sectionDivs.get(this.activeMenu));
+            this.toggleVisible(this.sectionDivs.get(this.activeMenu)!);
         }
 
         if (currentDisplay === 'none') {
             section.style.display = 'grid';
-            this.activeMenu = section.id;
+            this.activeMenu = section.id as MenuSectionId | '';
             return;
         }
         section.style.display = 'none';
