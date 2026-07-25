@@ -4,6 +4,18 @@
     src: url('fonts/JetBrains_Mono/JetBrainsMono-VariableFont_wght.ttf');
 }
 
+:root {
+  --bg: #1b1b1b;
+  --bg-secondary: #242424;
+  --bg-tertiary: #202020;
+  --bg-accent: #414141;
+  --text-colour: #ffffff;
+  --text-size: 0.8rem;
+  --line-height: 1.25rem;
+  --border-radius: 5px;
+  --font-family: JetBrains_Mono;
+}
+
 title {
   background-color: #ffffff !important;
 }
@@ -17,17 +29,6 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-}
-
-:root {
-  --bg: #1b1b1b;
-  --bg-secondary: #242424;
-  --bg-accent: #414141;
-  --text-colour: #ffffff;
-  --text-size: 0.8rem;
-  --line-height: 1.25rem;
-  --border-radius: 5px;
-  --font-family: JetBrains_Mono;
 }
 
 #titlebar {
@@ -108,7 +109,7 @@ body {
 }
 
 #line-numbers {
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-tertiary);
   color: var(--text-colour);
   font-family: var(--font-family);
   font-size: var(--text-size);
@@ -160,13 +161,15 @@ body {
   font-size: var(--text-size);
   color: var(--text-colour);
   padding: .25rem;
+  padding-left: .5rem;
   width: 100%;
   user-select: none;
 }
 
 #right-stats {
   float: right;
-  margin-right: 10px;
+  padding-right: .5rem;
+  margin-right: 8px;
 }
 
 textarea:focus {

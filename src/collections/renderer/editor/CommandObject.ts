@@ -18,7 +18,6 @@ export default class CommandObject {
         if (this.instruction === 'delete') {
             const insertLocation = this.location - 1;
             gapBuffer.insert(this.data, insertLocation);
-            gapBuffer.setCursorPos(insertLocation + dataLength);
             return;
         }
         
@@ -26,8 +25,6 @@ export default class CommandObject {
             const charLocation = this.location + dataLength - totalDeleted;
             gapBuffer.delete(charLocation);
         }
-
-        gapBuffer.setCursorPos(this.location);
     }
 
     merge(command: CommandObject): boolean {

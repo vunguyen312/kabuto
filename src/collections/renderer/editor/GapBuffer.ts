@@ -1,64 +1,61 @@
 export default class GapBuffer {
-    private readonly gapSize: number;
+    private static readonly GROWTH_RATE = 2;
+    private gapIncrease: number;
     private buffer: Array<string>;
     private gapLeft: number;
     private gapRight: number;
-    private size: number;
-    private cursorPos: number;
 
     constructor(text: string){
-        this.gapSize = 20;
+        this.gapIncrease = 5;
         this.buffer = new Array();
-        this.size = text.length + this.gapSize;
         this.gapLeft = text.length;
-        this.gapRight = this.size - 1;
-        this.cursorPos = text.length;
+        this.gapRight = text.length + this.gapIncrease - 1;
 
         this.loadText(text);
     }
 
-    loadText(text: string): void {
-        const newBuffer: Array<string> = new Array(text.length);
+    public loadText(text: string): void {
         this.gapLeft = text.length;
-        this.gapRight = this.gapLeft + this.gapSize - 1;
-        
-        for (let i = 0; i < text.length; i++) {
-            newBuffer[i] = text[i];
-        }
-
-        for (let i = 0; i < this.gapSize; i++) {
-            newBuffer.push('_');
-        }
-
-        this.buffer = newBuffer;
-        this.size = newBuffer.length;
-        this.cursorPos = this.gapLeft;
-    }
-
-    //i need to clean this up
-    grow(len: number): void {
-        const newGapSize = this.gapRight - this.gapLeft + len + 1;
-        const newSize = this.size + len;
+        const newSize = text.length + this.gapIncrease;
         const newBuffer: Array<string> = new Array(newSize);
 
         for (let i = 0; i < this.gapLeft; i++) {
-            newBuffer[i] = this.buffer[i];
+            newBuffer[i] = text[i];
         }
 
-        for (let i = this.gapLeft; i < this.gapLeft + newGapSize; i++) {
+        const gapLength = this.gapLeft + this.gapIncrease;
+        for (let i = this.gapLeft; i < gapLength; i++) {
             newBuffer[i] = '_';
         }
 
-        const rightStart = this.gapRight + 1;
-        const newRightStart = this.gapLeft + newGapSize;
+        this.gapRight = gapLength - 1;
+        this.buffer = newBuffer;
+    }
 
-        for (let i = 0; i < this.size - rightStart; i++) {
+    private grow(): void {
+        this.gapIncrease *= GapBuffer.GROWTH_RATE;
+        const currGapLength = this.getCurrGap();
+        const newSize = this.buffer.length - currGapLength + this.gapIncrease;
+        const newBuffer: Array<string> = new Array(newSize);
+        
+        for (let i = 0; i < this.gapLeft; i++) {
+            newBuffer[i] = this.buffer[i];
+        }
+        
+        const endGapLength = this.gapLeft + this.gapIncrease;
+        for (let i = this.gapLeft; i < endGapLength; i++) {
+            newBuffer[i] = '_';
+        }
+        
+        const rightStart = this.gapRight + 1;
+        const rightLength = this.buffer.length - rightStart;
+        const newRightStart = newBuffer.length - rightLength;
+        for (let i = 0; i < rightLength; i++) {
             newBuffer[newRightStart + i] = this.buffer[rightStart + i];
         }
 
+        this.gapRight = endGapLength - 1;
         this.buffer = newBuffer;
-        this.size = newSize;
-        this.gapRight += len;
     }
 
     left(position: number): void {
@@ -80,6 +77,13 @@ export default class GapBuffer {
     }
 
     moveCursor(position: number): void {
+        const currGapLength = this.getCurrGap();
+        if (currGapLength === 0) {
+            this.gapLeft = position;
+            this.gapRight = position - 1;
+            return;
+        }
+
         if (position < this.gapLeft) {
             this.left(position);
             return;
@@ -92,10 +96,10 @@ export default class GapBuffer {
         if (position !== this.gapLeft) {
             this.moveCursor(position);
         }
-        
+
         for (let index = 0; index < len; index++) {
-            if (this.gapRight === this.gapLeft) {
-                this.grow(this.gapSize);
+            if (this.gapRight === this.gapLeft - 1) {
+                this.grow();
             }
             this.buffer[this.gapLeft] = input[index];
             this.gapLeft++;
@@ -103,41 +107,18 @@ export default class GapBuffer {
         }
     }
 
-    
+    public delete(position: number): void {
+        if (position - 1 < 0) {
+            return;
+        }
 
-    //TODO: Close gap size on the right when deleting. Might cause some 
-    // performance issues during long editing sessions.
-    delete(position: number): void {
-        if (position - 1 < 0) return;
         this.moveCursor(position);
         this.gapLeft--;
-        //Gotta set the cursor pos in here because users can press backspace at
-        //  the start.
-        this.cursorPos--;
         this.buffer[this.gapLeft] = '_';
-        
-        this.shortenGap(this.gapRight);
-    }
-    
-    shortenGap(position: number): void {
-        for (let i = position; i < this.buffer.length; i++) {
-            this.buffer[i] = this.buffer[i + 1];
-        }
-        this.gapRight--;
-        this.buffer.length--;
-        this.size--;
-    }
-
-    setCursorPos(cursorPos: number): void {
-        this.cursorPos = cursorPos;
-    }
-
-    getCursorPos(): number {
-        return this.cursorPos;
     }
 
     getSize(): number {
-        return this.size;
+        return this.buffer.length;
     }
 
     getBuffer(): Array<string> {

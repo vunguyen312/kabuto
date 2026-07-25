@@ -40,7 +40,7 @@ export default class Controller {
         e.preventDefault();
         this.editor.handleUndo(e, text);
         //Cursor pos refers to GapBuffer's gap
-        const cursorPos = this.gapBuffer.getCursorPos();
+        const cursorPos = this.gapBuffer.getGapLeft();
         const isShortcut = e.ctrlKey || e.metaKey;
 
         switch(e.key) {
@@ -228,7 +228,6 @@ export default class Controller {
         const buffer = gapBuffer.getBuffer();
         if (prevCursorPos < beginningIndex) return;
 
-        gapBuffer.setCursorPos(prevCursorPos);
         gapBuffer.moveCursor(prevCursorPos);
         this.findTrueIndex(prevCursorPos, buffer);
     }
@@ -247,7 +246,7 @@ export default class Controller {
 
     handleClick(e: MouseEvent, gapBuffer: GapBuffer, newCursorPos: number): void {
         e.preventDefault();
-        const cursorPos = gapBuffer.getCursorPos(); 
+        const cursorPos = gapBuffer.getGapLeft(); 
 
         this.relocateCursorOnClick(cursorPos, gapBuffer, newCursorPos);
         this.findTrueIndex(newCursorPos, gapBuffer.getBuffer());
@@ -278,7 +277,6 @@ export default class Controller {
         if (e) {
             this.handleClosingChars(insertPos, gapBuffer, e);
         }
-        gapBuffer.setCursorPos(nextPos);
     }
 
     handleClosingChars(cursorPos: number, gapBuffer: GapBuffer, 

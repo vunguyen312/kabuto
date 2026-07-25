@@ -226,7 +226,6 @@ export default class Editor {
     }
 
     setCursorAndCaret(gapBuffer: GapBuffer, cursorPos: number): void {
-        gapBuffer.setCursorPos(cursorPos);
         gapBuffer.moveCursor(cursorPos);
     }
 
