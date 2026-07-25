@@ -26,30 +26,31 @@
     "lint": "eslint --ext .ts,.tsx ."
   },
   "devDependencies": {
-    "@electron-forge/cli": "^7.5.0",
-    "@electron-forge/maker-deb": "^7.5.0",
-    "@electron-forge/maker-rpm": "^7.5.0",
-    "@electron-forge/maker-squirrel": "^7.5.0",
-    "@electron-forge/maker-zip": "^7.5.0",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.5.0",
-    "@electron-forge/plugin-fuses": "^7.5.0",
-    "@electron-forge/plugin-webpack": "^7.5.0",
+    "@electron-forge/cli": "^7.11.2",
+    "@electron-forge/maker-deb": "^7.11.2",
+    "@electron-forge/maker-rpm": "^7.11.2",
+    "@electron-forge/maker-squirrel": "^7.11.2",
+    "@electron-forge/maker-zip": "^7.11.2",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.11.2",
+    "@electron-forge/plugin-fuses": "^7.11.2",
+    "@electron-forge/plugin-webpack": "^7.11.2",
     "@electron/fuses": "^1.8.0",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
+    "@eslint/js": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.65.0",
+    "@typescript-eslint/parser": "^8.65.0",
     "@vercel/webpack-asset-relocator-loader": "^1.7.3",
     "css-loader": "^6.11.0",
     "electron": "39.8.5",
-    "electron-icon-builder": "^2.0.1",
-    "eslint": "^8.57.1",
-    "eslint-plugin-import": "^2.30.0",
-    "fork-ts-checker-webpack-plugin": "^7.3.0",
+    "eslint": "^10.8.0",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-import-x": "^4.17.1",
+    "fork-ts-checker-webpack-plugin": "^9.1.0",
     "html-webpack-plugin": "^5.6.5",
     "node-loader": "^2.0.0",
     "style-loader": "^3.3.4",
     "ts-loader": "^9.5.1",
-    "ts-node": "^10.9.2",
-    "typescript": "~4.9.5"
+    "typescript": "~4.9.5",
+    "typescript-eslint": "^8.65.0"
   },
   "keywords": [],
   "author": {
@@ -59,5 +60,20 @@
   "license": "MIT",
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1"
+  },
+  "overrides": {
+    "@electron/asar": "4.0.1",
+    "@electron/rebuild": "4.2.0",
+    "asar": "npm:@electron/asar@4.0.1",
+    "fork-ts-checker-webpack-plugin": {
+      "minimatch": "10.2.5"
+    },
+    "@inquirer/editor": "4.2.23",
+    "minimatch": "10.2.5",
+    "temp": {
+      "rimraf": "6.0.1"
+    },
+    "tmp": "0.2.7",
+    "webpack-dev-server": "6.0.0"
   }
 }
