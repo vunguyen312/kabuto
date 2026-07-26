@@ -1,5 +1,5 @@
 import GapBuffer from "./GapBuffer";
-import { Instruction } from "../../../types/cmdObj";
+import type { Instruction } from "./types";
 
 export default class CommandObject {
     private data: string;

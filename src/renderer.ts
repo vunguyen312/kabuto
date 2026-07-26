@@ -1,8 +1,8 @@
 import './styles/index.css';
 import Editor from './collections/renderer/editor/Editor';
 import Menu from './collections/renderer/menu/Menu';
-import Stats from "./types/stats";
-import FileData from './types/fileData';
+import type Stats from "./collections/renderer/types";
+import type FileData from './shared/fileData';
 
 export default class Renderer {
     private text: HTMLTextAreaElement;

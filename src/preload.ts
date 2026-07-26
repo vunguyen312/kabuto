@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import FileData from "./types/fileData";
+import type FileData from "./shared/fileData";
 
 contextBridge.exposeInMainWorld('electron', {
     createNewFile: () => 

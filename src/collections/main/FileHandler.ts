@@ -1,6 +1,6 @@
 import { dialog } from 'electron';
 import * as fs from 'fs';
-import FileData from '../../types/fileData';
+import type FileData from '../../shared/fileData';
 
 export default class FileHandler {
     static async openFileMenu(): Promise<FileData | null> {

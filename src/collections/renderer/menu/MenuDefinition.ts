@@ -1,5 +1,5 @@
-import MenuItem from '../../../types/menuItem';
-import type { MenuSectionId } from './Menu';
+import type MenuItem from './types';
+import type { MenuSectionId } from './types';
 
 export default class MenuDefinition {
     public static create(): Map<MenuSectionId, MenuItem[]> {

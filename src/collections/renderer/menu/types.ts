@@ -19,8 +19,12 @@ export type MenuActionId =
     'help:license' |
     'help:about';
 
-export default interface menuItem {
-    display: string,
-    shortcut: string,
-    action: MenuActionId
+export type MenuSectionId =
+    'file' | 'edit' | 'selection' | 'view' |
+    'terminal' | 'help';
+
+export default interface MenuItem {
+    display: string;
+    shortcut: string;
+    action: MenuActionId;
 }

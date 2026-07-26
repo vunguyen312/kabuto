@@ -1,6 +1,6 @@
 import GapBuffer from "./GapBuffer";
-import Stats from "../../../types/stats";
-import FileData from '../../../types/fileData';
+import type Stats from "../types";
+import type FileData from '../../../shared/fileData';
 import Controller from './Controller';
 
 export default class Editor {

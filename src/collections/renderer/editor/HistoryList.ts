@@ -1,5 +1,5 @@
 import CommandObject from "./CommandObject";
-import { Instruction } from "../../../types/cmdObj";
+import type { Instruction } from "./types";
 
 class Node {
     private prevNode: Node | null;

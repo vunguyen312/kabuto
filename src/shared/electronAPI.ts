@@ -1,4 +1,4 @@
-import FileData from "./fileData";
+import type FileData from './fileData';
 
 export default interface ElectronAPI {
     createNewFile: () => Promise<FileData | null>;

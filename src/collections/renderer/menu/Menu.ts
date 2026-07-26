@@ -1,12 +1,12 @@
-import MenuItem, { MenuActionId } from '../../../types/menuItem';
+import type MenuItem from './types';
+import type { MenuActionId } from './types';
+import type { MenuSectionId } from './types';
 import MenuDefinition from './MenuDefinition';
-import FileData from '../../../types/fileData';
+import type FileData from '../../../shared/fileData';
 
 type LoadFileContent = (fileData: FileData) => void;
 type GetFileData = () => FileData;
 type MenuAction = () => void | Promise<void>;
-export type MenuSectionId = 'file' | 'edit' | 'selection' | 'view' 
-                            | 'terminal' | 'help';
 
 export default class Menu {
     private loadFileContent: LoadFileContent;
