@@ -63,54 +63,6 @@ export default class MenuDefinition {
                     action: 'edit:paste'
                 }
             ]],
-            ['selection', [
-                { 
-                    display: 'Select All', 
-                    shortcut: 'Ctrl+A', 
-                    action: 'selection:all'
-                }
-            ]],
-            ['view', [
-                { 
-                    display: 'Run', 
-                    shortcut: 'Ctrl+Shift+D',
-                    action: 'view:run'
-                }
-            ]],
-            ['terminal', [
-                { 
-                    display: 'New Terminal', 
-                    shortcut: 'Ctrl+Shift+`', 
-                    action: 'terminal:new'
-                },
-                { 
-                    display: 'New Terminal Window', 
-                    shortcut: 'Ctrl+Alt+`', 
-                    action: 'terminal:window'
-                },
-                { 
-                    display: 'Run Task...', 
-                    shortcut: '', 
-                    action: 'terminal:task'
-                }
-            ]],
-            ['help', [
-                { 
-                    display: 'Documentation', 
-                    shortcut: '', 
-                    action: 'help:documentation'
-                },
-                { 
-                    display: 'View License', 
-                    shortcut: '', 
-                    action: 'help:license'
-                },
-                { 
-                    display: 'About', 
-                    shortcut: '', 
-                    action: 'help:about'
-                }
-            ]]
         ]);
     }
 }
