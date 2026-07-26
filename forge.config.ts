@@ -21,6 +21,8 @@ const config: ForgeConfig = {
     new AutoUnpackNativesPlugin({}),
     new WebpackPlugin({
       port: 3003,
+      devContentSecurityPolicy:
+        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';",
       mainConfig,
       renderer: {
         config: rendererConfig,
