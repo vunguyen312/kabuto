@@ -106,15 +106,16 @@ export default class Menu {
         const currentDisplay = section.style.display;
 
         if (this.activeMenu !== section.id && this.activeMenu !== '') {
-            this.toggleVisible(this.sectionDivs.get(this.activeMenu)!);
+            const currMenu = this.sectionDivs.get(this.activeMenu)!;
+            this.toggleVisible(currMenu);
         }
 
-        if (currentDisplay === 'none') {
+        if (!currentDisplay) {
             section.style.display = 'grid';
             this.activeMenu = section.id as MenuSectionId | '';
             return;
         }
-        section.style.display = 'none';
+        section.style.display = '';
         this.activeMenu = '';
     }
 
