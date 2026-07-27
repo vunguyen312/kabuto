@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <title>Zector Editor</title>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';"
+    />
   </head>
   <body>
     <nav id="titlebar">
@@ -13,18 +17,6 @@
         </li>
         <li>
           <button class="nav-button" id="edit">Edit</button>
-        </li>
-        <li>
-          <button class="nav-button" id="selection">Selection</button>
-        </li>
-        <li>
-          <button class="nav-button" id="view">View</button>
-        </li>
-        <li>
-          <button class="nav-button" id="terminal">Terminal</button>
-        </li>
-        <li>
-          <button class="nav-button" id="help">Help</button>
         </li>
       </ul>
     </nav>

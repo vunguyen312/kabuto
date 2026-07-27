@@ -9,19 +9,10 @@ export type MenuActionId =
     'edit:redo' |
     'edit:cut' |
     'edit:copy' |
-    'edit:paste' |
-    'selection:all' |
-    'view:run' |
-    'terminal:new' |
-    'terminal:window' |
-    'terminal:task' |
-    'help:documentation' |
-    'help:license' |
-    'help:about';
+    'edit:paste';
 
 export type MenuSectionId =
-    'file' | 'edit' | 'selection' | 'view' |
-    'terminal' | 'help';
+    'file' | 'edit';
 
 export default interface MenuItem {
     display: string;

@@ -1,4 +1,4 @@
 export default interface FileData {
-    path: string | undefined;
+    path: string | null;
     content: string;
 }
