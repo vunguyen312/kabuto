@@ -115,7 +115,8 @@ body {
   font-size: var(--text-size);
   line-height: var(--line-height);
   user-select: none;
-  white-space: pre-line;
+  white-space: normal;
+  counter-reset: line;
   text-align: right;
   border: none;
   resize: none;
@@ -123,6 +124,17 @@ body {
   width: 50px;
   overflow: hidden;
   z-index: 1;
+}
+
+.line-number {
+  display: block;
+  line-height: var(--line-height);
+  white-space: nowrap;
+  counter-increment: line;
+}
+
+.line-number::before {
+  content: counter(line);
 }
 
 #text-input, #output {

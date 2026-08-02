@@ -31,17 +31,18 @@ export default class Controller {
 
     setEventListeners(text: HTMLTextAreaElement): void {
         text.addEventListener('keydown', (e: KeyboardEvent) => 
-            this.listenForKeystrokes(e, text));
+            this.listenForKeystrokes(e));
         text.addEventListener('click', (e: MouseEvent) => 
             this.handleClick(e, this.gapBuffer, text.selectionStart));
     }
 
-    listenForKeystrokes(e: KeyboardEvent, text: HTMLTextAreaElement): void {
+    listenForKeystrokes(e: KeyboardEvent): void {
         e.preventDefault();
-        this.editor.handleUndo(e, text);
         //Cursor pos refers to GapBuffer's gap
         const cursorPos = this.gapBuffer.getGapLeft();
         const isShortcut = e.ctrlKey || e.metaKey;
+        const shouldSyncLineNumbers = isShortcut &&
+            (e.key === "y" || e.key === "z");
 
         switch(e.key) {
             case "Enter":
@@ -86,7 +87,7 @@ export default class Controller {
                 break;
         }
 
-        this.editor.updateEditorText();
+        this.editor.updateEditorText(shouldSyncLineNumbers);
         this.editor.getStats();
     }
 
@@ -120,7 +121,7 @@ export default class Controller {
         this.trueIndex = beginningIndex;
 
         this.addText('\n', cursorPos, nextCursorPos, gapBuffer, null);
-        this.editor.addSingleLineNumber();
+        this.editor.addLineNumbers(1);
     }
 
     handleBackspace(cursorPos: number, gapBuffer: GapBuffer): void {
@@ -132,10 +133,10 @@ export default class Controller {
             return;
         }
         if (buffer[prevIndex] === '\n') {
-            this.editor.removeSingleLineNumber();
             
             this.history.recordAction('delete', cursorPos, '\n');
             gapBuffer.delete(cursorPos);
+            this.editor.removeLineNumbers(1);
             this.trueIndex = this.getTrueIndex(prevIndex, gapBuffer);
             return;
         }
@@ -259,13 +260,16 @@ export default class Controller {
         this.relocateCursorOnClick(cursorPos, gapBuffer, newCursorPos);
         this.findTrueIndex(newCursorPos, gapBuffer.getBuffer());
 
-        this.editor.updateEditorText();
+        this.editor.updateEditorText(false);
         this.editor.getStats();
     }
 
     relocateCursorOnClick(cursorPos: number, gapBuffer: GapBuffer, 
                           newCursorPos: number): void {
-        if (newCursorPos === cursorPos) return;
+        if (newCursorPos === cursorPos) {
+            return;
+        }
+
         this.editor.setCursorAndCaret(gapBuffer, newCursorPos);
     }
 
