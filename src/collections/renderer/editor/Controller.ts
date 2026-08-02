@@ -1,6 +1,6 @@
 import GapBuffer from "./GapBuffer";
 import Editor from "./Editor";
-import HistoryList from "./HistoryList";
+import History from "./History";
 
 export default class Controller {
     private readonly charPairs = new Map([
@@ -17,10 +17,10 @@ export default class Controller {
     //Basically, it controls the behaviour text editors have when using up and 
     // down arrow keys to navigate
     private trueIndex = 0;
-    private undoList: HistoryList;
+    private history: History;
 
     constructor(editor: Editor, gapBuffer: GapBuffer) {
-        this.undoList = new HistoryList();
+        this.history = new History();
         this.editor = editor;
         this.gapBuffer = gapBuffer;
     }
@@ -31,17 +31,18 @@ export default class Controller {
 
     setEventListeners(text: HTMLTextAreaElement): void {
         text.addEventListener('keydown', (e: KeyboardEvent) => 
-            this.listenForKeystrokes(e, text));
+            this.listenForKeystrokes(e));
         text.addEventListener('click', (e: MouseEvent) => 
             this.handleClick(e, this.gapBuffer, text.selectionStart));
     }
 
-    listenForKeystrokes(e: KeyboardEvent, text: HTMLTextAreaElement): void {
+    listenForKeystrokes(e: KeyboardEvent): void {
         e.preventDefault();
-        this.editor.handleUndo(e, text);
         //Cursor pos refers to GapBuffer's gap
         const cursorPos = this.gapBuffer.getGapLeft();
         const isShortcut = e.ctrlKey || e.metaKey;
+        const shouldSyncLineNumbers = isShortcut &&
+            (e.key === "y" || e.key === "z");
 
         switch(e.key) {
             case "Enter":
@@ -65,6 +66,14 @@ export default class Controller {
             case "ArrowDown":
                 this.handleDownArrow(this.gapBuffer);
                 break;
+            // Okay this implementation is seriously pissing me off this is next up
+            case "y":
+                if (isShortcut) {
+                    this.handleRedo(this.gapBuffer);
+                } else {
+                    this.handleInput(cursorPos, this.gapBuffer, e);
+                }
+                break;
             case "z":
                 if (isShortcut) {
                     this.handleUndo(this.gapBuffer);
@@ -78,7 +87,7 @@ export default class Controller {
                 break;
         }
 
-        this.editor.updateEditorText();
+        this.editor.updateEditorText(shouldSyncLineNumbers);
         this.editor.getStats();
     }
 
@@ -112,7 +121,7 @@ export default class Controller {
         this.trueIndex = beginningIndex;
 
         this.addText('\n', cursorPos, nextCursorPos, gapBuffer, null);
-        this.editor.addSingleLineNumber();
+        this.editor.addLineNumbers(1);
     }
 
     handleBackspace(cursorPos: number, gapBuffer: GapBuffer): void {
@@ -124,16 +133,16 @@ export default class Controller {
             return;
         }
         if (buffer[prevIndex] === '\n') {
-            this.editor.removeSingleLineNumber();
             
-            this.undoList.createNode('\n', 'delete', cursorPos);
+            this.history.recordAction('delete', cursorPos, '\n');
             gapBuffer.delete(cursorPos);
+            this.editor.removeLineNumbers(1);
             this.trueIndex = this.getTrueIndex(prevIndex, gapBuffer);
             return;
         }
 
         this.trueIndex--;
-        this.undoList.createNode(buffer[prevIndex], 'delete', cursorPos);
+        this.history.recordAction('delete', cursorPos, buffer[prevIndex]);
         gapBuffer.delete(cursorPos);
     }
 
@@ -251,13 +260,16 @@ export default class Controller {
         this.relocateCursorOnClick(cursorPos, gapBuffer, newCursorPos);
         this.findTrueIndex(newCursorPos, gapBuffer.getBuffer());
 
-        this.editor.updateEditorText();
+        this.editor.updateEditorText(false);
         this.editor.getStats();
     }
 
     relocateCursorOnClick(cursorPos: number, gapBuffer: GapBuffer, 
                           newCursorPos: number): void {
-        if (newCursorPos === cursorPos) return;
+        if (newCursorPos === cursorPos) {
+            return;
+        }
+
         this.editor.setCursorAndCaret(gapBuffer, newCursorPos);
     }
 
@@ -272,7 +284,7 @@ export default class Controller {
 
     addText(data: string, insertPos: number, nextPos: number, 
             gapBuffer: GapBuffer, e: KeyboardEvent | null): void {
-        this.undoList.createNode(data, 'insert', insertPos);
+        this.history.recordAction('insert', insertPos, data);
         gapBuffer.insert(data, insertPos);
         if (e) {
             this.handleClosingChars(insertPos, gapBuffer, e);
@@ -288,15 +300,11 @@ export default class Controller {
     }
 
     handleUndo(gapBuffer: GapBuffer): void {
-        const head = this.undoList.getHead();
-        
-        if (!head) {
-            return;
-        }
+        this.history.undo(gapBuffer);
+    }
 
-        const command = head.getCommand();
-        command.undo(gapBuffer);
-        this.undoList.removeHead();
+    handleRedo(gapBuffer: GapBuffer): void {
+        this.history.redo(gapBuffer);
     }
 }
 

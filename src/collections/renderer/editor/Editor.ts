@@ -7,8 +7,7 @@ export default class Editor {
     private text: HTMLTextAreaElement;
     private title: HTMLTitleElement;
     private lineNumbers: HTMLDivElement;
-    private currentRowCount: number;
-    private prevRowCount: number;
+    private lineCount: number;
     private lnTracker: HTMLSpanElement;
     private colTracker: HTMLSpanElement;
     private charTracker: HTMLSpanElement;
@@ -16,7 +15,7 @@ export default class Editor {
     private gapBuffer: GapBuffer;
     private output: HTMLDivElement;
     private controller: Controller;
-    public filePath: string | undefined;
+    public filePath: string | null;
 
     constructor(text: HTMLTextAreaElement, lineNumbers: HTMLDivElement, 
                 stats: Stats) {
@@ -25,13 +24,12 @@ export default class Editor {
         this.output = document.getElementById('output') as HTMLDivElement;
         this.title = document.querySelector('title') as HTMLTitleElement;
         this.lineNumbers = lineNumbers;
-        this.currentRowCount = 0;
-        this.prevRowCount = 0;
+        this.lineCount = 1;
         this.controller = new Controller(this, this.gapBuffer);
         this.filePath = '';
 
         //Stats
-        this.currentRowCount = text.value.split('\n').length;
+
         this.lnTracker = stats.ln;
         this.colTracker = stats.col;
         this.charTracker = stats.char;
@@ -42,9 +40,7 @@ export default class Editor {
     }
 
     public init(): void {
-        this.updateEditorText();
-        this.setLineNumbers();
-        this.setEventListeners();
+        this.updateEditorText(true);
         this.controller.init(this.text);
     }
 
@@ -53,57 +49,67 @@ export default class Editor {
             this.syncScroll(this.output));
     }
     
-    setLineNumbers(): void {
-        this.prevRowCount = this.text.value.split('\n').length;
-        let lineNumbers = '';
-        for (let i = 1; i <= this.prevRowCount; i++) {
-            lineNumbers += `${i}\n`;
-        }
-        this.lineNumbers.textContent = lineNumbers;
-        this.currentRowCount = this.prevRowCount;
-        console.log(this.currentRowCount, 'set');
-    }
-
-    addSingleLineNumber(): void {
-        this.prevRowCount = this.currentRowCount;
-        this.currentRowCount++;
-        this.lineNumbers.textContent += `${this.currentRowCount}`;
-        this.lineNumbers.textContent += '\n';
-    }
-
-    removeSingleLineNumber(): void {
-        if (this.lineNumbers.textContent.length <= 2) return;
-
-        let currIndex = this.lineNumbers.textContent.length - 1;
-        const lastRow = this.lineNumbers.textContent[currIndex];
-
-        if (lastRow === '\n') {
-            currIndex--;
+    private countLines(content: string): number {
+        let newlineCount = 1;
+        for (let i = 0; i < content.length; i++) {
+            if (content[i] === '\n') {
+                newlineCount++;
+            }
         }
 
-        while (this.lineNumbers.textContent[currIndex] !== '\n') {
-            currIndex--;
-        }
-
-        this.lineNumbers.textContent = this.lineNumbers.textContent
-            .substring(0, currIndex + 1);
-        this.prevRowCount = this.currentRowCount;
-        this.currentRowCount--;
+        return newlineCount;
     }
 
-    handleUndo(e: KeyboardEvent, text: HTMLTextAreaElement): void {
-        if (e.key !== 'Ctrl' && e.key !== 'z') return;
-        this.prevRowCount = text.value.split('\n').length;
-        //this.handleLineNumber(text);
+    private createLineNumber(): HTMLSpanElement {
+        const lineNumber = document.createElement('span');
+        lineNumber.className = 'line-number';
+        return lineNumber;
+    }
+    
+    public addLineNumbers(count: number): void {
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < count; i++) {
+            const lineNumber = this.createLineNumber();
+            fragment.appendChild(lineNumber);
+        }
+        this.lineNumbers.appendChild(fragment);
+        this.lineCount += count;
+    }
+
+    public removeLineNumbers(count: number): void {
+        for (let i = 0; i < count; i++) {
+            if (this.lineNumbers.childElementCount <= 1) {
+                return;
+            }
+
+            const lastLineNumber = this.lineNumbers.lastElementChild;
+            if (!lastLineNumber) {
+                return;
+            }
+            this.lineNumbers.removeChild(lastLineNumber);
+        }
+        this.lineCount -= count;
+    }
+
+    private syncLineNumbers(content: string): void {
+        const desiredLineCount = this.countLines(content);
+        const lineDelta = desiredLineCount - this.lineNumbers.childElementCount;
+
+        if (lineDelta > 0) {
+            this.addLineNumbers(lineDelta);
+        } else if (lineDelta < 0) {
+            this.removeLineNumbers(-lineDelta);
+        }
+
+        this.lineCount = desiredLineCount;
     }
 
     tokenize(text: HTMLTextAreaElement): string[] {
         const regex = /(\bconst\b|\blet\b|\bvar\b|\bif\b|\belse\b|\bfor\b|\bwhile\b|\bfunction\b|\breturn\b|\bclass\b|\bimport\b|\bexport\b|\basync\b|\bawait\b|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|\b\d+(\.\d+)?\b|\/\/.*?$|\/\*[\s\S]*?\*\/|[()[\]{}]|[+\-*/%=&|^~<>!;.]=?|&&|\|\|)/gm;
         //Split JavaScript keywords into tokens.
         //TODO: Get this from JSON so other languages can be supported.
-        return text.value
-            .split(regex)
-            .filter(token => token);
+        return text.value.split(regex)
+                         .filter(token => token);
     }
 
     escapeHtml(unsafe: string): string {
@@ -188,21 +194,29 @@ export default class Editor {
 
     getCurrRow(): number {
         const selectionStart = this.text.selectionStart;
-        const remainingText = this.text.value.substring(0, selectionStart);
-        return remainingText.split('\n').length;
+        const content = this.text.value;
+        let row = 1;
+
+        for (let i = 0; i < selectionStart; i++) {
+            if (content[i] === '\n') {
+                row++;
+            }
+        }
+
+        return row;
     }
 
-    //Optimize this using a loop which counts backwards. Current 
-    // implementation very inefficient
     getCurrCol(): number {
         const selectionStart = this.text.selectionStart;
-        const textBeforeCursor = this.text.value.substring(0, selectionStart);
-        //The length of a substring made from the last selected line to 
-        // the cursor is technically the current column.
-        const currentRow = textBeforeCursor
-            .split('\n')
-            .pop() || '';
-        return currentRow.length + 1;
+        const content = this.text.value;
+        let col = 1;
+
+        for (let i = selectionStart - 1;
+             i >= 0 && content[i] !== '\n'; i--) {
+            col++;
+        }
+
+        return col;
     }
 
     getCharCount(): number {
@@ -221,7 +235,7 @@ export default class Editor {
         const row = this.getCurrRow();
         const col = this.getCurrCol();
         const char = this.getCharCount();
-        const totalLn = this.currentRowCount;
+        const totalLn = this.lineCount;
         this.updateStatDisplay(row, col, char, totalLn);
     }
 
@@ -229,10 +243,17 @@ export default class Editor {
         gapBuffer.moveCursor(cursorPos);
     }
 
-    updateEditorText(): void {
+    updateEditorText(shouldSyncLineNumbers: boolean): void {
+        const content = this.gapBuffer.toString();
+        this.text.value = content;
         const gapLeft = this.gapBuffer.getGapLeft();
-        this.text.value = this.gapBuffer.toString();
         this.text.setSelectionRange(gapLeft, gapLeft);
+
+        // For undo/redo
+        if (shouldSyncLineNumbers) {
+            this.syncLineNumbers(content);
+        }
+
         this.highlight(this.text, this.output);
     }
 
@@ -241,8 +262,8 @@ export default class Editor {
         this.title.textContent = `Zector Editor - ${this.filePath}`;
         
         this.gapBuffer.loadText(fileData.content);
-        this.updateEditorText();
-        this.setLineNumbers();
+        this.updateEditorText(true);
+        
         this.getStats();
     }
 
