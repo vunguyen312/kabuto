@@ -16,7 +16,7 @@ export default class Editor {
     private gapBuffer: GapBuffer;
     private output: HTMLDivElement;
     private controller: Controller;
-    public filePath: string | undefined;
+    public filePath: string | null;
 
     constructor(text: HTMLTextAreaElement, lineNumbers: HTMLDivElement, 
                 stats: Stats) {
