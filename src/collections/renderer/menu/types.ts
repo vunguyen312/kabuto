@@ -4,15 +4,10 @@ export type MenuActionId =
     'file:open' |
     'file:save' |
     'file:saveas' |
-    'window:exit' |
-    'edit:undo' |
-    'edit:redo' |
-    'edit:cut' |
-    'edit:copy' |
-    'edit:paste';
+    'window:exit' ;
 
 export type MenuSectionId =
-    'file' | 'edit';
+    'file';
 
 export default interface MenuItem {
     display: string;
