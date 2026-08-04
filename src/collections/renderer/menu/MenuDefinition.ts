@@ -36,33 +36,6 @@ export default class MenuDefinition {
                     action: 'window:exit'
                 }
             ]],
-            ['edit', [
-                { 
-                    display: 'Undo', 
-                    shortcut: 'Ctrl+Z', 
-                    action: 'edit:undo'
-                },
-                { 
-                    display: 'Redo', 
-                    shortcut: 'Ctrl+Y', 
-                    action: 'edit:redo'
-                },
-                { 
-                    display: 'Cut', 
-                    shortcut: 'Ctrl+X', 
-                    action: 'edit:cut'
-                },
-                { 
-                    display: 'Copy', 
-                    shortcut: 'Ctrl+C', 
-                    action: 'edit:copy'
-                },
-                { 
-                    display: 'Paste', 
-                    shortcut: 'Ctrl+V', 
-                    action: 'edit:paste'
-                }
-            ]],
         ]);
     }
 }

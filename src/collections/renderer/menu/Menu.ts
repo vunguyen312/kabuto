@@ -22,11 +22,6 @@ export default class Menu {
             'file:save': async () => await this.saveFile(),
             'file:saveas': async () => await this.saveFileAs(),
             'window:exit': () => this.exitWindow(),
-            'edit:undo': () => {},
-            'edit:redo': () => {},
-            'edit:cut': () => {},
-            'edit:copy': () => {},
-            'edit:paste': () => {},
         };
 
     //i could lowkey put this all into one giant object and build it from there
